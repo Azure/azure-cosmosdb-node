@@ -113,8 +113,7 @@ var AzureDocuments = Base.defineClass(null, null,
          */
         IndexingMode: Object.freeze({
             Consistent: "consistent",
-            Lazy: "lazy",
-            None: "none"
+            Lazy: "lazy"
         }),
 
         /**
@@ -127,14 +126,9 @@ var AzureDocuments = Base.defineClass(null, null,
          * @property Range  This is supplied for a path which requires sorting.
          */
 
-        IndexKind: Object.freeze({
+        IndexType: Object.freeze({
             Hash: "Hash",
             Range: "Range"
-        }),
-
-        DataType: Object.freeze({
-            Number: "Number",
-            String: "String"
         }),
 
         ConnectionMode: Object.freeze({

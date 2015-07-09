@@ -13,9 +13,9 @@ function addOrMergeHeadersForError(error, responseHeaders){
     if (!error.responseHeaders) {
         error.responseHeaders = responseHeaders;
     } else {
-        for (var headerIndex in responseHeaders) {
-            if (!error.responseHeaders[headerIndex]) {
-                error.responseHeaders[headerIndex] = responseHeaders[headerIndex];
+        for (k in responseHeaders) {
+            if (!error.responseHeaders[k]) {
+                error.responseHeaders[k] = responseHeaders[k];
             } // else you lose it because we don't overwrite existing...
         }
     }
