@@ -24,7 +24,7 @@ var AuthHandler = {
                    (headers["x-ms-date"] || "") + "\n" +
                    (headers["date"] || "") + "\n";
 
-        var body = new Buffer(text.toLowerCase(), "utf8");
+        var body = new Buffer(text, "utf8");
 
         var signature = crypto.createHmac("sha256", key).update(body).digest("base64");
 
