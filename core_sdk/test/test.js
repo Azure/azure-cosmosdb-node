@@ -1688,4 +1688,80 @@ describe("NodeJS CRUD Tests", function() {
             });
         });
     });
+
+    describe("Validate Id based routing", function () {
+        it("[nativeApi] Should do document CRUD operations with id (not rid) successfully", function (done) {
+            var client = new DocumentDBClient(host, { masterKey: masterKey });
+            // create database
+            client.createDatabase({ id: "Sample Database" }, function (err, db) {
+                assert.equal(err, undefined, "error creating database");
+                // create collection
+                client.createCollection(encodeURIComponent("dbs/Sample Database"), { id: "sample collection" }, function (err, collection) {
+                    assert.equal(err, undefined, "error creating collection");
+                    // read documents
+                    client.readDocuments(encodeURIComponent("dbs/Sample Database/colls/sample collection")).toArray(function (err, documents) {
+                        assert.equal(err, undefined, "error reading documents");
+                        assert.equal(documents.constructor, Array, "Value should be an array");
+                        // create a document
+                        var beforeCreateDocumentsCount = documents.length;
+                        var documentDefinition = { id: "sample document", name: "foo" };
+                        client.createDocument(encodeURIComponent("dbs/Sample Database/colls/sample collection"), documentDefinition, { disableAutomaticIdGeneration: true }, function (err, document) {
+                            assert(err !== undefined, "should throw an error because automatic id generation is disabled");
+                            client.createDocument(encodeURIComponent("dbs/Sample Database/colls/sample collection"), documentDefinition, function (err, document) {
+                                assert.equal(err, undefined, "error creating document");
+                                assert.equal(document.id, documentDefinition.id);
+                                assert(document.id !== undefined);
+                                // read documents after creation
+                                client.readDocuments(encodeURIComponent("dbs/Sample Database/colls/sample collection")).toArray(function (err, documents) {
+                                    assert.equal(err, undefined, "error reading documents");
+                                    assert.equal(documents.length, beforeCreateDocumentsCount + 1, "create should increase the number of documents");
+                                    // query documents
+                                    var querySpec = {
+                                        query: "SELECT * FROM root r WHERE r.id=@id",
+                                        parameters: [
+                                            {
+                                                name: "@id",
+                                                value: document.id
+                                            }
+                                        ]
+                                    };
+                                    client.queryDocuments(encodeURIComponent("dbs/Sample Database/colls/sample collection"), querySpec).toArray(function (err, results) {
+                                        assert.equal(err, undefined, "error querying documents");
+                                        assert(results.length > 0, "number of results for the query should be > 0");
+                                        client.queryDocuments(encodeURIComponent("dbs/Sample Database/colls/sample collection"), querySpec, { enableScanInQuery: true }).toArray(function (err, results) {
+                                            assert.equal(err, undefined, "error querying documents");
+                                            assert(results.length > 0, "number of results for the query should be > 0");
+                                            //replace document
+                                            document.name = "replaced document";
+                                            document.foo = "bar";
+                                            client.replaceDocument(encodeURIComponent("dbs/Sample Database/colls/sample collection/docs/sample document"), document, function (error, replacedDocument) {
+                                                assert.equal(replacedDocument.name, "replaced document", "document name property should change");
+                                                assert.equal(replacedDocument.foo, "bar", "property should have added");
+                                                assert.equal(document.id, replacedDocument.id, "document id should stay the same");
+                                                // read document
+                                                client.readDocument(encodeURIComponent("dbs/Sample Database/colls/sample collection/docs/sample document"), function (err, document) {
+                                                    assert.equal(err, undefined, "readDocument should work successfully");
+                                                    assert.equal(replacedDocument.id, document.id);
+                                                    // delete document
+                                                    client.deleteDocument(encodeURIComponent("dbs/Sample Database/colls/sample collection/docs/sample document"), function (err, res) {
+                                                        assert.equal(err, undefined, "error deleting document");
+                                                        // read documents after deletion
+                                                        client.readDocument(encodeURIComponent("dbs/Sample Database/colls/sample collection/docs/sample document"), function (err, document) {
+                                                            var notFoundErrorCode = 404;
+                                                            assert.equal(err.code, notFoundErrorCode, "response should return error code 404");
+                                                            done();
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
 });
