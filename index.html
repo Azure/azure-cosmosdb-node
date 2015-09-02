@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Index</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Index</h1>
+
+    
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>Microsoft Azure DocumentDB Node.js SDK</h1><p>This project provides a node module that makes it easy to interact with Azure DocumentDB. For documentation please see the Microsoft Azure <a href="http://azure.microsoft.com/en-us/develop/nodejs/">Node.js Developer Center</a> and the <a href="http://dl.windowsazure.com/documentDB/nodedocs/">NodejsDocs</a>.</p>
+<h2>Installation</h2><h4>Core Module</h4><p>The core module uses the callbacks model for responses, exposed through the DocumentClient </p>
+<pre class="prettyprint source"><code>npm install documentdb</code></pre>
+<h2>Usage</h2>
+<p>To use this SDK to call Azure DocumentDB, you need to first <a href="http://azure.microsoft.com/en-us/documentation/articles/documentdb-create-account/">create an account</a>.</p>
+<p>You can follow this <a href="http://azure.microsoft.com/en-us/documentation/articles/documentdb-nodejs-application/">tutorial</a> to help you get started.</p>
+<h2>Examples</h2><h4>Hello World using Callbacks via the Core Module</h4><pre class="prettyprint source lang-js"><code>var DocumentClient = require('documentdb').DocumentClient;
+
+var host = &quot;[hostendpoint]&quot;;                     // Add your endpoint
+var masterKey = &quot;[database account masterkey]&quot;;  // Add the massterkey of the endpoint
+var client = new DocumentClient(host, {masterKey: masterKey});
+
+var databaseDefinition = { id: &quot;sample database&quot; };
+var collectionDefinition = { id: &quot;sample collection&quot; };
+var documentDefinition = { id: &quot;hello world doc&quot;, content: &quot;Hello World!&quot; };
+
+client.createDatabase(databaseDefinition, function(err, database) {
+    if(err) return console.log(err);
+    console.log('created db');
+
+    client.createCollection(database._self, collectionDefinition, function(err, collection) {
+        if(err) return console.log(err);
+        console.log('created collection');
+
+        client.createDocument(collection._self, documentDefinition, function(err, document) {
+            if(err) return console.log(err);
+            console.log('Created Document with content: ', document.content);
+
+            cleanup(client, database);
+        });
+    });
+});
+
+function cleanup(client, database) {
+    client.deleteDatabase(database._self, function(err) {
+        if(err) console.log(err);
+    })
+}</code></pre>
+<h3>Youtube Videos</h3><p>Getting started with Azure DocumentDB on Node.js:</p>
+<p><a href="http://www.youtube.com/watch?v=UAE7h9PCZjA"><img src="http://img.youtube.com/vi/UAE7h9PCZjA/0.jpg" alt="Azure Demo: Getting started with Azure DocumentDB on Node.js"></a></p>
+<h2>Need Help?</h2><p>Be sure to check out the Microsoft Azure <a href="https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocumentDB">Developer Forums on MSDN</a> or the <a href="http://stackoverflow.com/questions/tagged/azure-documentdb">Developer Forums on Stack Overflow</a> if you have trouble with the provided code.</p>
+<h2>Contribute Code or Provide Feedback</h2><p>If you would like to become an active contributor to this project please follow the instructions provided in <a href="http://azure.github.io/guidelines.html">Azure Projects Contribution Guidelines</a>.</p>
+<p>If you encounter any bugs with the library please file an issue in the <a href="https://github.com/Azure/azure-documentdb-node/issues">Issues</a> section of the project.</p>
+<h2>Community</h2><ul>
+<li><a href="https://github.com/a8m/doqmentdb">DoQmentDB</a> - A Promise-based DocumentDB client for MongoDB users</li>
+<li><a href="https://github.com/gian788/docooment">Docooment</a> - A Mongoose like Azure DocuomentDB ORM</li>
+</ul>
+<h2>Learn More</h2><ul>
+<li><a href="http://azure.microsoft.com/en-us/develop/nodejs">Azure Developer Center</a></li>
+<li><a href="http://azure.microsoft.com/en-us/documentation/services/documentdb/">Azure DocumentDB Service</a></li>
+<li><a href="http://blogs.msdn.com/b/documentdb/">Azure DocumentDB Team Blog</a></li>
+<li><a href="http://dl.windowsazure.com/documentDB/nodedocs/">NodeJSDocs</a></li>
+</ul></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="QueryIterator.html">QueryIterator</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Aug 10 2015 15:42:40 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

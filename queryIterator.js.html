@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: queryIterator.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: queryIterator.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//----------------------------------------------------------------------------
+
+"use strict";
+
+var Base = require("./base")
+  , Constants = require("./constants");
+
+//SCRIPT START
+var QueryIterator = Base.defineClass(
+    /**
+    * Represents a QueryIterator Object, an implmenetation of feed or query response that enables traversal and iterating over the response.
+    * @constructor QueryIterator
+    * @param {object} documentclient - The documentclient object.
+    * @param {object} body           - the JSON body.
+    */
+    function(documentclient, query, options, fetchFunction){
+        this.documentclient = documentclient;
+        this.query = query;
+        this.resources = [];
+        this.current = 0;
+        this.fetchFunction = fetchFunction;
+        this.continuation = null;
+        this.options = options || {};
+        this._states = Object.freeze({start: "start", inProgress: "inProgress", ended: "ended" });
+        this._state = this._states.start;
+    },
+    {
+        /**
+         * Execute a provided function once per feed element.
+         * @memberof QueryIterator
+         * @instance
+         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
+         * Note: the last element the callback will be called on will be undefined.
+         * If the callback explicitly returned false, the loop gets stopped.
+         */
+        forEach: function(callback) {
+            if (this._state !== this._states.start) {
+                this.reset();
+            }
+
+            this._forEachImplementation(callback);
+        },
+
+         /**
+         * Execute a provided function on the next element in the QueryIterator.
+         * @memberof QueryIterator
+         * @instance
+         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
+         */
+        nextItem: function(callback) {
+            var that = this;
+            if (this.current &lt; this.resources.length) {
+                return callback(undefined, this.resources[this.current++]);
+            }
+
+            if (this._state === this._states.start || (this.continuation &amp;&amp; this._state === this._states.inProgress)) {
+                this._fetchMore(function(err, resources, headers){
+                    if(err) {
+                        return callback(err, undefined, headers);
+                    }
+
+                    that.resources = resources;
+                    if (that.resources.length === 0) {
+                        if (!that.continuation) {
+                            that._state = that._states.ended;
+                            callback(undefined, undefined);
+                        } else {
+                            that.nextItem(callback);
+                        }
+                        return undefined;
+                    }
+
+                    callback(undefined, that.resources[that.current++]);
+                });
+            } else {
+                this._state = this._states.ended;
+                callback(undefined, undefined);
+            }
+        },
+
+        /**
+         * Retrieve the current element on the QueryIterator.
+         * @memberof QueryIterator
+         * @instance
+         * @returns {Object} The current resource in the QueryIterator, undefined if there isn't.
+         */
+        current: function(){
+            return this.resources[this.current];
+        },
+
+        /**
+         * Determine if there are still remaining resources to processs based on the value of the continuation token or the elements remaining on the current batch in the QueryIterator.
+         * @memberof QueryIterator
+         * @instance
+         * @returns {Boolean} true if there is other elements to process in the QueryIterator.
+         */
+        hasMoreResults: function() {
+            return this._state === this._states.start || this.continuation !== undefined || this.current &lt; this.resources.length;
+        },
+
+        /**
+         * Retrieve all the elements of the feed and pass them as an array to a function
+         * @memberof QueryIterator
+         * @instance
+         * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
+         */
+        toArray: function(callback){
+            if (this._state !== this._states.start) {
+                this.reset();
+            }
+
+            this._toArrayImplementation(callback);
+        },
+
+        /**
+         * Retrieve the next batch of the feed and pass them as an array to a function
+         * @memberof QueryIterator
+         * @instance
+         * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
+         */
+        executeNext: function(callback) {
+            this._fetchMore(function(err, resources, responseHeaders) {
+                if(err) {
+                    return callback(err, undefined, responseHeaders);
+                }
+
+                callback(undefined, resources, responseHeaders);
+            });
+        },
+
+        /**
+         * Reset the QueryIterator to the beginning and clear all the resources inside it
+         * @memberof QueryIterator
+         * @instance
+         */
+        reset: function() {
+            this.current = 0;
+            this.continuation = null;
+            this.resources = [];
+            this._state = this._states.start;
+        },
+
+         /** @ignore */
+        _toArrayImplementation: function(callback){
+            var that = this;
+            if (this._state === this._states.start || (this.continuation &amp;&amp; this._state === this._states.inProgress)) {
+                this._fetchMore(function(err, resources, headers){
+                    if(err) {
+                        return callback(err, undefined, headers);
+                    }
+
+                    that.resources = that.resources.concat(resources);
+                    that._toArrayImplementation(callback);
+                });
+            } else {
+                this._state = this._states.ended;
+                callback(undefined, this.resources);
+            }
+        },
+
+         /** @ignore */
+        _forEachImplementation: function(callback){
+            var that = this;
+            if (this._state === this._states.start || (this.continuation &amp;&amp; this._state === this._states.inProgress)) {
+                this._fetchMore(function(err, resources, headers){
+                    if(err) {
+                        return callback(err, undefined, headers);
+                    }
+
+                    that.resources = resources;
+                    while (that.current &lt; that.resources.length) {
+                        // if the callback explicitly returned false, the loop gets stopped.
+                        if (callback(undefined, that.resources[that.current++]) === false) {
+                            return undefined;
+                        }
+                    }
+
+                    that._forEachImplementation(callback);
+                });
+            } else {
+                that._state = that._states.ended;
+                callback(undefined, undefined);
+            }
+        },
+
+         /** @ignore */
+        _fetchMore: function(callback){
+            var that = this;
+            this.options.continuation = this.continuation;
+            this.fetchFunction(this.options, function(err, resources, responseHeaders){
+                if(err) {
+                    that._state = that._states.ended;
+                    return callback(err, undefined, responseHeaders);
+                }
+
+                that.continuation = responseHeaders[Constants.HttpHeaders.Continuation];
+                that._state = that._states.inProgress;
+                that.current = 0;
+                callback(undefined, resources, responseHeaders);
+            });
+        }
+    }
+);
+//SCRIPT END
+
+if (typeof exports !== "undefined") {
+    module.exports = QueryIterator;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="QueryIterator.html">QueryIterator</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon Aug 10 2015 15:42:40 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
