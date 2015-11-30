@@ -1,3 +1,12 @@
+*.csproj
+*.njsproj
+generateDocs.cmd
+RunFunctionalTests.cmd
+runtests.cmd
+
+config.js
+
+
 #################
 ## Eclipse
 #################

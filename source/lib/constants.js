@@ -15,7 +15,7 @@ var Constants = {
         QueryJson: "application/query+json",
         SQL: "application/sql",
         TextHtml: "text/html",
-        TextPlain: "text/plain",        
+        TextPlain: "text/plain",
         Xml: "application/xml"
     },
 
@@ -38,7 +38,7 @@ var Constants = {
         ContentEncoding: "Content-Encoding",
         CharacterSet: "CharacterSet",
         UserAgent: "User-Agent",
-        IfModified_since: "If-Modified-Since",
+        IfModifiedSince: "If-Modified-Since",
         IfMatch: "If-Match",
         IfNoneMatch: "If-None-Match",
         ContentLength: "Content-Length",
@@ -103,10 +103,10 @@ var Constants = {
         EmitVerboseTracesInQuery: "x-ms-documentdb-query-emit-traces",
         // Version headers and values
         Version: "x-ms-version",
-        
+
         //Quota Info
         MaxEntityCount: "x-ms-root-entity-max-count",
-        CurrentEntityCount: "x-ms-root-entity-current-count",            
+        CurrentEntityCount: "x-ms-root-entity-current-count",
         CollectionQuotaInMb: "x-ms-collection-quota-mb",
         CollectionCurrentUsageInMb: "x-ms-collection-usage-mb",
         MaxMediaStorageUsageInMB: "x-ms-max-media-storage-usage-mb",
@@ -114,13 +114,27 @@ var Constants = {
         RequestCharge: "x-ms-request-charge",
 
         // Offer header
-        OfferType: "x-ms-offer-type"
+        OfferType: "x-ms-offer-type",
+
+        // Index progress headers
+        IndexTransformationProgress: "x-ms-documentdb-collection-index-transformation-progress",
+        LazyIndexingProgress: "x-ms-documentdb-collection-lazy-indexing-progress",
+
+        // Upsert header
+        IsUpsert: "x-ms-documentdb-is-upsert"
     },
-	
-    CurrentVersion: "2015-04-08",
-    
-    UserAgent: "documentdb-nodejs-sdk-1.0.0"
-}
+
+    CurrentVersion: "2015-08-06",
+
+    UserAgent: "documentdb-nodejs-sdk-1.4.0",
+
+    DefaultPrecisions: {
+        DefaultNumberHashPrecision: 3,
+        DefaultNumberRangePrecision: -1,
+        DefaultStringHashPrecision: 3,
+        DefaultStringRangePrecision: -1
+    }
+};
 
 //SCRIPT END
 
