@@ -28,9 +28,7 @@
 
 <header>
     
-        <h2>
-        QueryIterator
-        </h2>
+        <h2>QueryIterator</h2>
         
     
 </header>
@@ -42,7 +40,7 @@
 
     
 
-    <h4 class="name" id="QueryIterator"><span class="type-signature"></span>new QueryIterator<span class="signature">(documentclient, body)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="QueryIterator"><span class="type-signature"></span>new QueryIterator<span class="signature">(documentclient, query, options, fetchFunctions)</span><span class="type-signature"></span></h4>
 
     
 
@@ -108,13 +106,16 @@
 
         <tr>
             
-                <td class="name"><code>body</code></td>
+                <td class="name"><code>query</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><a href="global.html#SqlQuerySpec">SqlQuerySpec</a></span>
+|
+
+<span class="param-type">string</span>
 
 
             
@@ -124,7 +125,56 @@
 
             
 
-            <td class="description last">the JSON body.</td>
+            <td class="description last">A SQL query.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#FeedOptions">FeedOptions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Represents the feed options.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fetchFunctions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">callback</span>
+|
+
+<span class="param-type">Array.&lt;callback></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A function to retrieve each page of data. An array of functions may be used to query more than one partition.</td>
         </tr>
 
     
@@ -165,7 +215,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line12">line 12</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line31">line 31</a>
     </li></ul></dd>
     
 
@@ -273,7 +323,7 @@
 
             
 
-            <td class="description last">Function to execute for each element. the function takes two parameters error, element.</td>
+            <td class="description last">Function to execute for the current element. the function takes two parameters error, element.</td>
         </tr>
 
     
@@ -314,7 +364,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line66">line 66</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line88">line 88</a>
     </li></ul></dd>
     
 
@@ -445,7 +495,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line127">line 127</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line149">line 149</a>
     </li></ul></dd>
     
 
@@ -576,7 +626,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line38">line 38</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line60">line 60</a>
     </li></ul></dd>
     
 
@@ -658,7 +708,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line103">line 103</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line125">line 125</a>
     </li></ul></dd>
     
 
@@ -811,7 +861,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line52">line 52</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -893,7 +943,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line142">line 142</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line164">line 164</a>
     </li></ul></dd>
     
 
@@ -1024,7 +1074,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line113">line 113</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line135">line 135</a>
     </li></ul></dd>
     
 
@@ -1066,13 +1116,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="QueryIterator.html">QueryIterator</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Thu Sep 17 2015 15:29:43 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 22 2016 11:00:30 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
