@@ -65,7 +65,9 @@ function cleanup(client, database) {
 ###Query data
 ```js
 var DocumentClient = require('documentdb').DocumentClient;
-var client = new DocumentClient(config.endpoint, { "masterKey": config.authKey });
+var host = "[hostendpoint]";                     // Add your endpoint
+var masterKey = "[database account masterkey]";  // Add the massterkey of the endpoint
+var client = new DocumentClient(host, {masterKey: masterKey});
 var collectionUrl = 'dbs/' + DBACCOUNT '/colls/' + COLLECTIONID;
 
 var querySpec = {
