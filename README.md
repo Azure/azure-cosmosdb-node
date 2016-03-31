@@ -62,6 +62,36 @@ function cleanup(client, database) {
 }
 ```
 
+###Query data
+```js
+var DocumentClient = require('documentdb').DocumentClient;
+var client = new DocumentClient(config.endpoint, { "masterKey": config.authKey });
+var collectionUrl = 'dbs/' + DBACCOUNT '/colls/' + COLLECTIONID;
+
+var querySpec = {
+	query: 'SELECT * FROM YOUR_COLLECTION ALIAS WHERE ALIAS.FIELD = @id',
+    	parameters: [
+			{
+				name: '@id',
+				value: 'YOUR_VALUE'
+			}
+        ]
+     };
+        
+        
+client.queryDocuments(collectionUrl, querySpec).toArray(function (err, results) {
+	if (err) {
+    	// do something with your error
+
+    } else if (results.length == 0) {
+    	// there is not data matching the query
+
+    } else {
+        // do something with your results
+    }
+});
+
+```
 ###Youtube Videos
 
 Getting started with Azure DocumentDB on Node.js:
