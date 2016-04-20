@@ -26,14 +26,33 @@ SOFTWARE.
 var Documents = require("./documents")
   , Constants = require("./constants")
   , https = require("https")
+  , tunnel = require('tunnel')
   , url = require("url")
   , querystring = require("querystring")
   // Dedicated Agent for socket pooling
-  , keepAliveAgent = new https.Agent({ keepAlive: true, maxSockets: Infinity });
+  , keepAliveAgent = createPoolingAgent();
 
 //----------------------------------------------------------------------------
 // Utility methods
 //
+function createPoolingAgent() {
+    var proxy = process.env.http_proxy || process.env.https_proxy;
+    var options = { keepAlive: true, maxSockets: Infinity };
+    return proxy ? createProxyAgent(options, proxy) : new https.Agent(options);
+};
+
+function createProxyAgent(options, proxy) {
+    var proxyUrl = url.parse(proxy);
+    
+    options.proxy = {
+        host: proxyUrl.hostname,
+        port: proxyUrl.port
+    };
+    
+    return proxyUrl.protocol.toLowerCase() === "https:" ?
+        tunnel.httpsOverHttps(options) :
+        tunnel.httpsOverHttp(options);
+};
 
 function bodyFromData(data) {
     if (data.pipe) return data;
