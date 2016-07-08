@@ -199,6 +199,75 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>EnableEndpointDiscovery</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Flag to enable/disable automatic redirecting of requests based on read/write operations.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>PreferredLocations</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">List of azure regions to be used as preferred locations for read requests.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>RetryOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#RetryOptions">RetryOptions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">RetryOptions instance which defines several configurable properties used during retry.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -234,7 +303,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line273">line 273</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line277">line 277</a>
     </li></ul></dd>
     
 
@@ -409,7 +478,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line135">line 135</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line136">line 136</a>
     </li></ul></dd>
     
 
@@ -756,7 +825,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line47">line 47</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -896,7 +965,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line153">line 153</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line154">line 154</a>
     </li></ul></dd>
     
 
@@ -1051,7 +1120,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line169">line 169</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line170">line 170</a>
     </li></ul></dd>
     
 
@@ -1190,7 +1259,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line204">line 204</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line205">line 205</a>
     </li></ul></dd>
     
 
@@ -1345,7 +1414,193 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line217">line 217</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line218">line 218</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="RetryOptions"><span class="type-signature"></span>RetryOptions<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Represents the Retry policy assocated with throttled requests.
+</div>
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>MaxRetryAttemptCount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Max number of retries to be performed for a request. Default value 9.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>FixedRetryIntervalInMilliseconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Fixed retry interval in milliseconds to wait between each retry ignoring the retryAfter returned as part of the response.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>MaxWaitTimeInSeconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Max wait time in seconds to wait for a request while the retries are happening. Default value 30 seconds.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="retryOptions.js.html">retryOptions.js</a>, <a href="retryOptions.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -1536,7 +1791,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line247">line 247</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line248">line 248</a>
     </li></ul></dd>
     
 
@@ -1673,7 +1928,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line231">line 231</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line232">line 232</a>
     </li></ul></dd>
     
 
@@ -1792,7 +2047,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line262">line 262</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line263">line 263</a>
     </li></ul></dd>
     
 
@@ -1811,6 +2066,164 @@
         
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getPartitionKeyDefinition"><span class="type-signature"></span>getPartitionKeyDefinition<span class="signature">(collectionLink, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Gets the partition key definition first by looking into the cache otherwise by reading the collection.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionLink</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Link to the collection whose partition key needs to be extracted.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The arguments to the callback are(in order): error, partitionKeyDefinition, response object and response headers</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2190">line 2190</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 
     
@@ -1924,7 +2337,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2511">line 2511</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2516">line 2516</a>
     </li></ul></dd>
     
 
@@ -2151,7 +2564,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2438">line 2438</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2443">line 2443</a>
     </li></ul></dd>
     
 
@@ -2298,7 +2711,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2492">line 2492</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2497">line 2497</a>
     </li></ul></dd>
     
 
@@ -2468,7 +2881,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2501">line 2501</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2506">line 2506</a>
     </li></ul></dd>
     
 
@@ -2663,7 +3076,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2480">line 2480</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2485">line 2485</a>
     </li></ul></dd>
     
 
@@ -2840,7 +3253,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2448">line 2448</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2453">line 2453</a>
     </li></ul></dd>
     
 
@@ -3079,7 +3492,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2470">line 2470</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2475">line 2475</a>
     </li></ul></dd>
     
 
@@ -3511,7 +3924,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2423">line 2423</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2428">line 2428</a>
     </li></ul></dd>
     
 
@@ -3658,7 +4071,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2456">line 2456</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2461">line 2461</a>
     </li></ul></dd>
     
 
@@ -3805,7 +4218,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2463">line 2463</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2468">line 2468</a>
     </li></ul></dd>
     
 
@@ -3835,13 +4248,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#getPartitionKeyDefinition">getPartitionKeyDefinition</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jun 14 2016 13:47:10 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 08 2016 07:40:33 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
