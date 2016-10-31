@@ -40,7 +40,7 @@
 
     
 
-    <h4 class="name" id="QueryIterator"><span class="type-signature"></span>new QueryIterator<span class="signature">(documentclient, query, options, fetchFunctions)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="QueryIterator"><span class="type-signature"></span>new QueryIterator<span class="signature">(documentclient, query, options, fetchFunctions, resourceLink<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -71,6 +71,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -95,6 +97,14 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -122,6 +132,14 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
@@ -144,6 +162,14 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -171,10 +197,51 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">A function to retrieve each page of data. An array of functions may be used to query more than one partition.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resourceLink</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An optional parameter that represents the resourceLink (will be used in orderby/top/parallel query)</td>
         </tr>
 
     
@@ -215,7 +282,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line31">line 31</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line32">line 32</a>
     </li></ul></dd>
     
 
@@ -364,7 +431,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line88">line 88</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -495,7 +562,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line149">line 149</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -663,10 +730,6 @@
 
 
 
-<div class="description">
-    Determine if there are still remaining resources to processs based on the value of the continuation token or the elements remaining on the current batch in the QueryIterator.
-</div>
-
 
 
 
@@ -696,6 +759,8 @@
     
 
     
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Instead check if callback(undefined, undefined) is invoked by nextItem(callback) or current(callback)Determine if there are still remaining resources to processs based on the value of the continuation token or the elements remaining on the current batch in the QueryIterator.</li></ul></dd>
+    
 
     
 
@@ -708,7 +773,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line125">line 125</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line93">line 93</a>
     </li></ul></dd>
     
 
@@ -861,7 +926,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line74">line 74</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line71">line 71</a>
     </li></ul></dd>
     
 
@@ -943,7 +1008,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line164">line 164</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -1074,7 +1139,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line135">line 135</a>
+        <a href="queryIterator.js.html">queryIterator.js</a>, <a href="queryIterator.js.html#line103">line 103</a>
     </li></ul></dd>
     
 
@@ -1116,13 +1181,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#getPartitionKeyDefinition">getPartitionKeyDefinition</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 08 2016 07:40:34 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Tue Oct 04 2016 13:46:40 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
