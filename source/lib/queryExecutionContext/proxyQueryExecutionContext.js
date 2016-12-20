@@ -85,7 +85,6 @@ var ProxyQueryExecutionContext = Base.defineClass(
             assert(!Array.isArray(this.resourceLink) || this.resourceLink.length === 1,
                 "for top/orderby exactly one collectionLink is required");
 
-            var collectionLink = undefined;
             if (Array.isArray(this.resourceLink)) {
                 collectionLink = this.resourceLink[0];
             } else {

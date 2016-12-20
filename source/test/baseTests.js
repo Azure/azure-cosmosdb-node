@@ -121,7 +121,7 @@ describe("Base._isValidCollectionLink", function () {
     
     it("dbs/x/colls/y => true", function () {
         var testValues = [
-            "dbs/b/colls/d",
+            "dbs/b/colls/d"
         ];
         
         testValues.forEach(function (value) {

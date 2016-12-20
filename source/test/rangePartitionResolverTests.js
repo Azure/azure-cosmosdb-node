@@ -276,16 +276,14 @@ describe("RangePartitionResolver", function () {
             ]);
 
         it("undefined", function (done) {
-            var partitionKey = undefined;
             var expectedLinks = ["link1", "link2"];
-            resolveForReadTest(resolver, partitionKey, expectedLinks);
+            resolveForReadTest(resolver, undefined, expectedLinks);
             done();
         });
 
         it("null", function (done) {
-            var partitionKey = null;
             var expectedLinks = ["link1", "link2"];
-            resolveForReadTest(resolver, partitionKey, expectedLinks);
+            resolveForReadTest(resolver, null, expectedLinks);
             done();
         });
     });

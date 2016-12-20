@@ -163,7 +163,7 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
         var ranges = [
             // two ranges fall in the same partition key range
             new QueryRange("05C1C9CD673400", "05C1C9CD673401", true, false),
-            new QueryRange("05C1C9CD673402", "05C1C9CD673403", true, false),
+            new QueryRange("05C1C9CD673402", "05C1C9CD673403", true, false)
         ]
         validateOverlappingRanges(ranges, partitionKeyRanges.slice(1, 2), done);
     });
@@ -179,7 +179,7 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
             new QueryRange("05C1E9CD673398", "05C1E9CD673401", true, false),
             new QueryRange("05C1E9CD673402", "05C1E9CD673403", true, false),
             // empty range
-            new QueryRange("FF", "FF", true, false),
+            new QueryRange("FF", "FF", true, false)
         ]
         validateOverlappingRanges(ranges, [partitionKeyRanges[1], partitionKeyRanges[4]], done);
     });

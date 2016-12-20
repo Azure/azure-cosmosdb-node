@@ -113,7 +113,7 @@ var DocumentProducer = Base.defineClass(
                 that.bufferedCurrentItem = item;
                 callback(err, item);
             });
-        },
+        }
     },
 
     {

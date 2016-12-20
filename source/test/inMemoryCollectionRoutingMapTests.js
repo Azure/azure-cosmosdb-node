@@ -170,7 +170,7 @@ describe("InMemoryCollectionRoutingMap Tests", function () {
                 var partitionRangeWithInfo =
                     [
                         [{ 'id': "1", 'minInclusive': "0000000020", 'maxExclusive': "0000000030" }, 2],
-                        [{ 'id': "2", 'minInclusive': "0000000025", 'maxExclusive': "0000000035" }, 2],
+                        [{ 'id': "2", 'minInclusive': "0000000025", 'maxExclusive': "0000000035" }, 2]
                     ];
                 var collectionUniqueId = ""
                 try {
@@ -185,14 +185,14 @@ describe("InMemoryCollectionRoutingMap Tests", function () {
                 var partitionRangeWithInfo =
                     [
                         [{ 'id': "2", 'minInclusive': "", 'maxExclusive': "0000000030" }, 2],
-                        [{ 'id': "3", 'minInclusive': "0000000031", 'maxExclusive': "FF" }, 2],
+                        [{ 'id': "3", 'minInclusive': "0000000031", 'maxExclusive': "FF" }, 2]
                     ];
                 var collectionRoutingMap = CollectionRoutingMapFactory.createCompleteRoutingMap(partitionRangeWithInfo, 'sample collection id');
                 assert.equal(collectionRoutingMap, null);
                 
                 partitionRangeWithInfo = [
                     [{ 'id': "2", 'minInclusive': "", 'maxExclusive': "0000000030" }, 2],
-                    [{ 'id': "2", 'minInclusive': "0000000030", 'maxExclusive': "FF" }, 2],
+                    [{ 'id': "2", 'minInclusive': "0000000030", 'maxExclusive': "FF" }, 2]
                 ]
                 var collectionRoutingMap = CollectionRoutingMapFactory.createCompleteRoutingMap(partitionRangeWithInfo, 'sample collection id');
                 assert.notEqual(collectionRoutingMap, null);

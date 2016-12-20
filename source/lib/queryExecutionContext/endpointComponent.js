@@ -82,7 +82,7 @@ var OrderByEndpointComponent = Base.defineClass(
          */
         hasMoreResults: function () {
             return this.executionContext.hasMoreResults();
-        },
+        }
     }
 );
 
@@ -138,7 +138,7 @@ var TopEndpointComponent = Base.defineClass(
          */
         hasMoreResults: function () {
             return (this.topCount > 0 && this.executionContext.hasMoreResults());
-        },
+        }
     }
 );
 //SCRIPT END
