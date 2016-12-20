@@ -110,7 +110,7 @@ var PipelinedQueryExecutionContext = Base.defineClass(
 
                 that._fetchMoreImplementation(callback);
             });
-        },
+        }
     },
     {
         DEFAULT_PAGE_SIZE: 1000

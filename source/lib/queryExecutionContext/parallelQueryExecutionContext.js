@@ -294,7 +294,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
             var parsedRanges = QueryExecutionInfoParser.parseQueryRanges(this.paritionedQueryExecutionInfo);
             var queryRanges = parsedRanges.map(function (item) { return QueryRange.parseFromDict(item); });
             return this.routingProvider.getOverlappingRanges(callback, this.collectionLink, queryRanges);
-        },
+        }
     }, 
     {
         STATES: Object.freeze({ started: "started", inProgress: "inProgress", ended: "ended" })

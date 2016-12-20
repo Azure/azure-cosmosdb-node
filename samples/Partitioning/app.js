@@ -154,7 +154,7 @@ function useRangePartitionResolver(databaseLink, callback) {
             { "name": "Joe" }
         ];
         
-        for (i = 0; i < documents.length; i++){
+        for (var i = 0; i < documents.length; i++){
             collection_link = resolver.resolveForCreate(resolver.getPartitionKey(documents[i]));
             console.log(collection_link);
         }
@@ -162,7 +162,7 @@ function useRangePartitionResolver(databaseLink, callback) {
         var collection_link = resolver.resolveForCreate("Adams");
         console.log(collection_link);
         
-        var collection_link = resolver.resolveForCreate("Zoolander");
+        collection_link = resolver.resolveForCreate("Zoolander");
         console.log(collection_link);
                 
         var read_collection_links = resolver.resolveForRead(new Range({ low: "Douglas", high: "Quinton" }));
@@ -186,7 +186,7 @@ function useRangePartitionResolver(databaseLink, callback) {
                 
                 for (var i = 0; i < results.length; i++) {
                     console.log("Found " + results[i].name);    
-                };
+                }
                 
                 //you can also use Numbers in the range
                 //when you do this you need to provide a compare function as the 3rd parameter to RangePartitionResolver
@@ -207,7 +207,7 @@ function useRangePartitionResolver(databaseLink, callback) {
                 console.log(read_collection_links);
 
                 //here we define a range to read, this range happens to include both of the ranges we defined on the resolver, so both collections should get read.
-                var read_collection_links = resolver.resolveForRead(new Range({ low: 400, high: 600 }));
+                read_collection_links = resolver.resolveForRead(new Range({ low: 400, high: 600 }));
                 console.log(read_collection_links);   
                 
                 //register this new resolver
@@ -237,7 +237,7 @@ function useRangePartitionResolver(databaseLink, callback) {
                         console.log("\nQuerying with partition key: 500 produces " + results.length + " result(s)");
                         for (var i = 0; i < results.length; i++) {
                             console.log("Found " + results[i].val);    
-                        };
+                        }
                         
                         callback();
                     });
@@ -315,7 +315,7 @@ function useCustomPartitionResolver(databaseLink, callback) {
                 console.log("\nQuerying with partition key: 0 produces " + results.length + " result(s)");
                 for (var i = 0; i < results.length; i++) {
                     console.log("Found " + results[i].id);
-                };
+                }
                 
                 //here we are doing the same query but this time we're not supplying the partitionkey
                 //this will throw an exception in our custom resolver, where the range & hash resolvers resulted in a fan-out query

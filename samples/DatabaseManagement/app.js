@@ -34,13 +34,13 @@ console.log('1. findDatabaseById \'' + databaseId + '\'');
 findDatabaseById(databaseId, function (err, db) {
     
     //no database found, let's go ahead with sample
-    if (db == null) {
+    if (db === null) {
         console.log('Database with id ' + databaseId + ' not found.');
 
         // 2.
         console.log('\n2. createDatabase \'' + databaseId + '\'')
         createDatabase(databaseId, function (db) {
-            if (db != null) {
+            if (db !== null) {
                 console.log('Database with id ' + db.id + ' created.');
                 
                 // 3.
@@ -53,14 +53,14 @@ findDatabaseById(databaseId, function (err, db) {
                     // 4.
                     console.log('\n4. readDatabase - with _self \'' + db._self + '\'');
                     readDatabase(db, function (db) {                        
-                        if (db != null) {
+                        if (db !== null) {
                             console.log('Database with _self \'' + db._self + '\' was found its id is \'' + db.id);
                         }
                         
                         // 5.
                         console.log('\n5. readDatabase - with id \'' + db.id + '\'');
                         readDatabaseById(databaseId, function () {
-                            if (db != null) {
+                            if (db !== null) {
                                 console.log('Database with uri of \'dbs/' + db.id + '\' was found its _self is \'' + db._self + '\'');
                             }
 
@@ -165,7 +165,7 @@ function findDatabaseById(databaseId, callback) {
             callback(null, results[0]);
         }
     });
-};
+}
 
 function handleError(error) {
     console.log();

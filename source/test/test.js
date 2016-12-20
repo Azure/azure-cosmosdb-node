@@ -328,7 +328,6 @@ describe("NodeJS CRUD Tests", function () {
                 callback();
             }
             else {
-                var options = undefined;
                 if (partitionKey) {
                     if (documents[currentIndex].hasOwnProperty(partitionKey)) {
                         options = { partitionKey: documents[currentIndex][partitionKey] };
@@ -380,7 +379,6 @@ describe("NodeJS CRUD Tests", function () {
                 callback();
             }
             else {
-                var options = undefined;
                 if (partitionKey) {
                     if (documents[currentIndex].hasOwnProperty(partitionKey)) {
                         options = { partitionKey: documents[currentIndex][partitionKey] };
@@ -2244,7 +2242,6 @@ describe("NodeJS CRUD Tests", function () {
             });
         });
 
-        var db = undefined;
         var createDatabase = function (done) {
             client.createDatabase({ id: "sample 中文 database" }, function (err, createdDB) {
                 assert.equal(err, undefined, "error creating database ");
@@ -2252,7 +2249,6 @@ describe("NodeJS CRUD Tests", function () {
                 done();
             });
         }
-        var collection = undefined;
         var isNameBased = false;
 
         var createCollection = function (done) {

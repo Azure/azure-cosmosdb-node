@@ -102,18 +102,16 @@ var MurmurHash = Base.defineClass(
             
             var h1 = seed;
             var reader = new Uint32Array(bytes);
-            {
-                for (var i = 0; i < bytes.length - 3; i += 4) {
-                    var k1 = MurmurHash._readUInt32(reader, i);
-                    
-                    k1 = MurmurHash._multiply(k1, c1);
-                    k1 = MurmurHash._rotateLeft(k1, 15);
-                    k1 = MurmurHash._multiply(k1, c2);
-                    
-                    h1 ^= k1;
-                    h1 = MurmurHash._rotateLeft(h1, 13);
-                    h1 = MurmurHash._multiply(h1, 5) + 0xe6546b64;
-                }
+            for (var i = 0; i < bytes.length - 3; i += 4) {
+                var k1 = MurmurHash._readUInt32(reader, i);
+
+                k1 = MurmurHash._multiply(k1, c1);
+                k1 = MurmurHash._rotateLeft(k1, 15);
+                k1 = MurmurHash._multiply(k1, c2);
+
+                h1 ^= k1;
+                h1 = MurmurHash._rotateLeft(h1, 13);
+                h1 = MurmurHash._multiply(h1, 5) + 0xe6546b64;
             }
             
             var k = 0;

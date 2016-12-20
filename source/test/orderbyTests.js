@@ -163,7 +163,6 @@ describe("NodeJS Cross Partition Top Orderby Tests", function () {
             })
         });
 
-        var db = undefined;
         var createDatabase = function (done) {
             client.createDatabase({ id: "sample 中文 database" }, function (err, createdDB) {
                 assert.equal(err, undefined, "error creating database ");
@@ -171,7 +170,6 @@ describe("NodeJS Cross Partition Top Orderby Tests", function () {
                 done();
             });
         }
-        var collection = undefined;
         var isNameBased = false;
 
         var createCollection = function (done) {
