@@ -104,6 +104,7 @@ var QueryIterator = Base.defineClass(
         toArray: function (callback) {
             this.reset();
             this.toArrayTempResources = [];
+            this.toArrayTempHeaders = [];
             this._toArrayImplementation(callback);
         },
 
@@ -141,16 +142,17 @@ var QueryIterator = Base.defineClass(
                 if (err) {
                     return callback(err, undefined, headers);
                 }
-                // concatinate the results and fetch more
-                that.toArrayLastResHeaders = headers;
 
                 if (resource === undefined) {
-                
                     // no more results
-                    return callback(undefined, that.toArrayTempResources, that.toArrayLastResHeaders);
-                } 
+                    return callback(undefined, that.toArrayTempResources, that.toArrayTempHeaders);
+                }
 
+                // concatinate the results and fetch more
                 that.toArrayTempResources = that.toArrayTempResources.concat(resource);
+                if(headers) {
+                    that.toArrayTempHeaders = that.toArrayTempHeaders.concat(headers);
+                }
                 that._toArrayImplementation(callback);
             });
         },

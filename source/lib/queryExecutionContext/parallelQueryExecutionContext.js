@@ -61,6 +61,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
         this.state = ParallelQueryExecutionContext.STATES.start;
         this.routingProvider = new SmartRoutingMapProvider(this.documentclient);
         this.sortOrders = QueryExecutionInfoParser.parseOrderBy(this.paritionedQueryExecutionInfo);
+        this.headers = [];
 
         if (Array.isArray(this.sortOrders) && this.sortOrders.length > 0) {
             this.documentProducerComparator = DocumentProducer.createOrderByComparator(this.sortOrders);
@@ -97,13 +98,15 @@ var ParallelQueryExecutionContext = Base.defineClass(
                 targetPartitionQueryExecutionContextList.forEach(
                     function (targetQueryExContext) {
                         // has async callback
-                        targetQueryExContext.current(function (err, document) {
+                        targetQueryExContext.current(function (err, document, headers) {
                             // TODO: error handling
                             if (err) {
                                 that.err = err;
                                 that._decrementInitiationLock();
                                 return;
                             }
+
+                            that.headers.push(headers);
 
                             if (document == undefined) {
                                 that._decrementInitiationLock();
@@ -176,7 +179,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
                     return callback(that.err, undefined);
                 }
 
-                targetPartitionRangeDocumentProducer.nextItem(function (err, item) {
+                targetPartitionRangeDocumentProducer.nextItem(function (err, item, headers) {
                     if (err) {
                         // this should never happen
                         // because the documentProducer already has buffered an item
@@ -232,8 +235,10 @@ var ParallelQueryExecutionContext = Base.defineClass(
                         }
                     });
 
+                    var tmpHeaders = that.headers;
+                    that.headers = [];
                     // invoke the callback on the item
-                    callback(undefined, item);
+                    callback(undefined, item, tmpHeaders);
                 });
             });
         },
@@ -274,7 +279,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
         hasMoreResults: function () {
             return !(this.state === ParallelQueryExecutionContext.STATES.ended || this.err !== undefined);
         },
-        
+
         _createTargetPartitionQueryExecutionContext: function (partitionKeyTargetRange) {
             // creates target partition range Query Execution Context
             var rewrittenQuery = QueryExecutionInfoParser.parseRewrittenQuery(this.paritionedQueryExecutionInfo);
@@ -295,7 +300,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
             var queryRanges = parsedRanges.map(function (item) { return QueryRange.parseFromDict(item); });
             return this.routingProvider.getOverlappingRanges(callback, this.collectionLink, queryRanges);
         },
-    }, 
+    },
     {
         STATES: Object.freeze({ started: "started", inProgress: "inProgress", ended: "ended" })
     }
