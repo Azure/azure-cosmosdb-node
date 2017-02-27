@@ -45,14 +45,14 @@ var OrderByEndpointComponent = Base.defineClass(
          * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
          */
         nextItem: function (callback) {
-            this.executionContext.nextItem(function (err, item) {
+            this.executionContext.nextItem(function (err, item, headers) {
                 if (err) {
                     return callback(err, undefined);
                 }
                 if (item === undefined) {
                     return callback(undefined, undefined);
                 }
-                callback(undefined, item["payload"]);
+                callback(undefined, item["payload"], headers);
             });
         },
 
@@ -110,8 +110,8 @@ var TopEndpointComponent = Base.defineClass(
                 return callback(undefined, undefined);
             }
             this.topCount--;
-            this.executionContext.nextItem(function (err, item) {
-                callback(err, item);
+            this.executionContext.nextItem(function (err, item, headers) {
+                callback(err, item, headers);
             });
         },
 

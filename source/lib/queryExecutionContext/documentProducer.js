@@ -94,9 +94,9 @@ var DocumentProducer = Base.defineClass(
         */
         nextItem: function (callback) {
             var that = this;
-            this.internalExecutionContext.nextItem(function (err, item) {
+            this.internalExecutionContext.nextItem(function (err, item, headers) {
                 that.bufferedCurrentItem = undefined;
-                callback(err, item);
+                callback(err, item, headers);
             });
         },
 
@@ -108,10 +108,10 @@ var DocumentProducer = Base.defineClass(
          */
         current: function (callback) {
             var that = this;
-            this.internalExecutionContext.current(function (err, item) {
+            this.internalExecutionContext.current(function (err, item, headers) {
                 // sets the buffered current item for non async access
                 that.bufferedCurrentItem = item;
-                callback(err, item);
+                callback(err, item, headers);
             });
         },
     },
