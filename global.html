@@ -268,6 +268,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>DisableSSLVerification</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Flag to disable SSL verification for the requests. SSL verification is enabled by default. Don't set this when targeting production endpoints.                                                  This is intended to be used only when targeting emulator endpoint to avoid failing your requests with SSL related error.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -303,7 +326,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line279">line 279</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line281">line 281</a>
     </li></ul></dd>
     
 
@@ -2067,164 +2090,6 @@
     
 
     
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id="getPartitionKeyDefinition"><span class="type-signature"></span>getPartitionKeyDefinition<span class="signature">(collectionLink, callback)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Gets the partition key definition first by looking into the cache otherwise by reading the collection.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>collectionLink</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Link to the collection whose partition key needs to be extracted.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The arguments to the callback are(in order): error, partitionKeyDefinition, response object and response headers</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2236">line 2236</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
 
     
         <h3 class="subsection-title">Type Definitions</h3>
@@ -2337,7 +2202,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2568">line 2568</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2566">line 2566</a>
     </li></ul></dd>
     
 
@@ -2564,7 +2429,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2495">line 2495</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2493">line 2493</a>
     </li></ul></dd>
     
 
@@ -2711,7 +2576,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2549">line 2549</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2547">line 2547</a>
     </li></ul></dd>
     
 
@@ -2881,7 +2746,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2558">line 2558</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2556">line 2556</a>
     </li></ul></dd>
     
 
@@ -3076,7 +2941,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2537">line 2537</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2535">line 2535</a>
     </li></ul></dd>
     
 
@@ -3253,7 +3118,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2505">line 2505</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2503">line 2503</a>
     </li></ul></dd>
     
 
@@ -3492,7 +3357,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2527">line 2527</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2525">line 2525</a>
     </li></ul></dd>
     
 
@@ -3924,7 +3789,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2480">line 2480</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2478">line 2478</a>
     </li></ul></dd>
     
 
@@ -4071,7 +3936,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2513">line 2513</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2511">line 2511</a>
     </li></ul></dd>
     
 
@@ -4218,7 +4083,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2520">line 2520</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2518">line 2518</a>
     </li></ul></dd>
     
 
@@ -4248,13 +4113,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#getPartitionKeyDefinition">getPartitionKeyDefinition</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Oct 31 2016 06:16:34 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sat Mar 25 2017 06:57:54 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
