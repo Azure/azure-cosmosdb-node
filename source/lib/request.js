@@ -59,21 +59,22 @@ function createRequestObject(connectionPolicy, requestOptions, callback){
             return callback(undefined, response, response.headers);
         }
 
-        var data = "";
+        var chunks = [];
         response.on("data", function(chunk) {
-            data += chunk;
+            chunks.push(chunk);
         });
         response.on("end", function() {
+            var data = Buffer.concat(chunks);
             if (response.statusCode >= 400) {
-                return callback(getErrorBody(response, data), undefined, response.headers);
-                }
+                return callback(getErrorBody(response, data.toString("utf8")), undefined, response.headers);
+            }
 
             var result;
             try {
                 if (isMedia) {
                     result = data;
                 } else {
-                    result = data.length > 0 ? JSON.parse(data) : undefined;
+                    result = data.length > 0 ? JSON.parse(data.toString("utf8")) : undefined;
                 }
             } catch (exception) {
                 return callback(exception);
