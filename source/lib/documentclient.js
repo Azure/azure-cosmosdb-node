@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2014 Microsoft Corporation
 
@@ -90,9 +90,7 @@ var DocumentClient = Base.defineClass(
          * @param {function} callback        - The callback function which takes endpoint(string) as an argument.
         */
         getWriteEndpoint: function (callback) {
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                callback(writeEndpoint);
-            });
+            return this._globalEndpointManager.getWriteEndpoint(callback);
         },
 
         /** Gets the curent read endpoint for a geo-replicated database account.
@@ -101,9 +99,7 @@ var DocumentClient = Base.defineClass(
          * @param {function} callback        - The callback function which takes endpoint(string) as an argument.
         */
         getReadEndpoint: function (callback) {
-            this._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                callback(readEndpoint);
-            });
+            return this._globalEndpointManager.getReadEndpoint(callback);
         },
 
         /** Send a request for creating a database.
@@ -120,18 +116,32 @@ var DocumentClient = Base.defineClass(
          * @param {RequestCallback} callback - The callback for the request.
         */
         createDatabase: function (body, options, callback) {
-            var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+            var self = this;
+            var optionsCallbackTuple = self.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
-            
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(body, err)) {
+                    reject({ error: err });
+                } else {
+                    var path = "/dbs";
+                    self.create(body, path, "dbs", undefined, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    //TODO
+                    function createDatabaseSuccess(createDatabaseHash) {
+                        callback(createDatabaseHash.error, createDatabaseHash.response, createDatabaseHash.headers);
+                    },
+                    function createDatabaseFailure(createDatabaseHash) {
+                        callback(createDatabaseHash.error, createDatabaseHash.response, createDatabaseHash.headers);
+                    }
+                );
             }
-            
-            var path = "/dbs";
-            this.create(body, path, "dbs", undefined, undefined, options, callback);
         },
         
         /**
@@ -157,18 +167,31 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(databaseLink);
+                    var path = this.getPathFromLink(databaseLink, "colls", isNameBased);
+                    var id = this.getIdFromLink(databaseLink, isNameBased);
+
+                    this.create(body, path, "colls", id, undefined, options, callback).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createCollectionSuccess(createCollectionHash) {
+                        callback(createCollectionHash.error, createCollectionHash.response, createCollectionHash.headers);
+                    },
+                    function createCollectionFailure(createCollectionHash) {
+                        callback(createCollectionHash.error, createCollectionHash.response, createCollectionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(databaseLink);
-            var path = this.getPathFromLink(databaseLink, "colls", isNameBased);
-            var id = this.getIdFromLink(databaseLink, isNameBased);
-            
-            this.create(body, path, "colls", id, undefined, options, callback);
-        },
+       },
         
         /**
          * Create a document.
@@ -196,7 +219,7 @@ var DocumentClient = Base.defineClass(
                 collectionLink = this.resolveCollectionLinkForCreate(partitionResolver, body);
             }
             
-            this.createDocumentPrivate(collectionLink, body, options, callback);
+            return this.createDocumentPrivate(collectionLink, body, options, callback);
         },
         
         /**
@@ -219,18 +242,31 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(documentLink);
+                    var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
+                    var id = this.getIdFromLink(documentLink, isNameBased);
+
+                    this.create(body, path, "attachments", id, undefined, options, callback).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createAttachmentSuccess(createAttachmentHash) {
+                        callback(createAttachmentHash.error, createAttachmentHash.response, createAttachmentHash.headers);
+                    },
+                    function createAttachmentFailure(createAttachmentHash) {
+                        callback(createAttachmentHash.error, createAttachmentHash.response, createAttachmentHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(documentLink);
-            var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-            var id = this.getIdFromLink(documentLink, isNameBased);
-            
-            this.create(body, path, "attachments", id, undefined, options, callback);
-        },
+       },
         
         /**
          * Create a database user.
@@ -247,17 +283,30 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(databaseLink);
+                    var path = this.getPathFromLink(databaseLink, "users", isNameBased);
+                    var id = this.getIdFromLink(databaseLink, isNameBased);
+
+                    this.create(body, path, "users", id, undefined, options, callback).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createUserSuccess(createUserHash) {
+                        callback(createUserHash.error, createUserHash.response, createUserHash.headers);
+                    },
+                    function createUserFailure(createUserHash) {
+                        callback(createUserHash.error, createUserHash.response, createUserHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(databaseLink);
-            var path = this.getPathFromLink(databaseLink, "users", isNameBased);
-            var id = this.getIdFromLink(databaseLink, isNameBased);
-            
-            this.create(body, path, "users", id, undefined, options, callback);
         },
         
         /**
@@ -278,17 +327,30 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(userLink);
+                    var path = this.getPathFromLink(userLink, "permissions", isNameBased);
+                    var id = this.getIdFromLink(userLink, isNameBased);
+
+                    this.create(body, path, "permissions", id, undefined, options, callback).then(resolve, reject).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createPermissionSuccess(createPermissionHash) {
+                        callback(createPermissionHash.error, createPermissionHash.response, createPermissionHash.headers);
+                    },
+                    function createPermissionFailure(createPermissionHash) {
+                        callback(createPermissionHash.error, createPermissionHash.response, createPermissionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(userLink);
-            var path = this.getPathFromLink(userLink, "permissions", isNameBased);
-            var id = this.getIdFromLink(userLink, isNameBased);
-            
-            this.create(body, path, "permissions", id, undefined, options, callback);
         },
         
         /**
@@ -319,17 +381,30 @@ var DocumentClient = Base.defineClass(
                 trigger.body = trigger.body.toString();
             }
             
-            var err = {};
-            if (!this.isResourceValid(trigger, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(trigger, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
+                    var id = this.getIdFromLink(collectionLink, isNameBased);
+
+                    this.create(trigger, path, "triggers", id, undefined, options, callback).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createTriggerSuccess(createTriggerHash) {
+                        callback(createTriggerHash.error, createTriggerHash.response, createTriggerHash.headers);
+                    },
+                    function createTriggerFailure(createTriggerHash) {
+                        callback(createTriggerHash.error, createTriggerHash.response, createTriggerHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.create(trigger, path, "triggers", id, undefined, options, callback);
         },
         
         /**
@@ -359,17 +434,30 @@ var DocumentClient = Base.defineClass(
                 udf.body = udf.body.toString();
             }
             
-            var err = {};
-            if (!this.isResourceValid(udf, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(udf, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
+                    var id = this.getIdFromLink(collectionLink, isNameBased);
+
+                    this.create(udf, path, "udfs", id, undefined, options, callback).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createUserDefinedFunctionSuccess(createUserDefinedFunctionHash) {
+                        callback(createUserDefinedFunctionHash.error, createUserDefinedFunctionHash.response, createUserDefinedFunctionHash.headers);
+                    },
+                    function createUserDefinedFunctionFailure(createUserDefinedFunctionHash) {
+                        callback(createUserDefinedFunctionHash.error, createUserDefinedFunctionHash.response, createUserDefinedFunctionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.create(udf, path, "udfs", id, undefined, options, callback);
         },
         
         /**
@@ -399,17 +487,30 @@ var DocumentClient = Base.defineClass(
                 sproc.body = sproc.body.toString();
             }
             
-            var err = {};
-            if (!this.isResourceValid(sproc, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(sproc, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
+                    var id = this.getIdFromLink(collectionLink, isNameBased);
+
+                    this.create(sproc, path, "sprocs", id, undefined, options, callback).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createStoredProcedureSuccess(createStoredProcedureHash) {
+                        callback(createStoredProcedureHash.error, createStoredProcedureHash.response, createStoredProcedureHash.headers);
+                    },
+                    function createStoredProcedureFailure(createStoredProcedureHash) {
+                        callback(createStoredProcedureHash.error, createStoredProcedureHash.response, createStoredProcedureHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.create(sproc, path, "sprocs", id, undefined, options, callback);
         },
         
         /**
@@ -443,7 +544,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
             var id = this.getIdFromLink(documentLink, isNameBased);
             
-            this.create(readableStream, path, "attachments", id, initialHeaders, options, callback);
+            return this.create(readableStream, path, "attachments", id, initialHeaders, options, callback);
         },
         
         /** Reads a database.
@@ -482,12 +583,28 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(collectionLink, "", isNameBased);
             var id = this.getIdFromLink(collectionLink, isNameBased);
             
-            var that = this;
-            this.read(path, "colls", id, undefined, options, function (err, collection, headers) {
-                if (err) return callback(err, collection, headers);
-                that.partitionKeyDefinitionCache[collectionLink] = collection.partitionKey;
-                callback(err, collection, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.read(path, "colls", id, undefined, options).then(
+                    function (response) {
+                        self.partitionKeyDefinitionCache[collectionLink] = response.collection.partitionKey;
+                        resolve(response);
+                    },
+                    reject
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function readCollectionSuccess(readCollectionHash) {
+                        callback(readCollectionHash.error, readCollectionHash.response, readCollectionHash.headers);
+                    },
+                    function readCollectionFailure(readCollectionHash) {
+                        callback(readCollectionHash.error, readCollectionHash.response, readCollectionHash.headers);
+                    }
+                );
+            }
         },
         
         /**
@@ -507,7 +624,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(documentLink, "", isNameBased);
             var id = this.getIdFromLink(documentLink, isNameBased);
             
-            this.read(path, "docs", id, undefined, options, callback);
+            return this.read(path, "docs", id, undefined, options, callback);
         },
         
         /**
@@ -527,7 +644,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(attachmentLink, "", isNameBased);
             var id = this.getIdFromLink(attachmentLink, isNameBased);
             
-            this.read(path, "attachments", id, undefined, options, callback);
+            return this.read(path, "attachments", id, undefined, options, callback);
         },
         
         /**
@@ -547,7 +664,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(userLink, "", isNameBased);
             var id = this.getIdFromLink(userLink, isNameBased);
             
-            this.read(path, "users", id, undefined, options, callback);
+            return this.read(path, "users", id, undefined, options, callback);
         },
         
         /**
@@ -567,7 +684,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(permissionLink, "", isNameBased);
             var id = this.getIdFromLink(permissionLink, isNameBased);
             
-            this.read(path, "permissions", id, undefined, options, callback);
+            return this.read(path, "permissions", id, undefined, options, callback);
         },
         
         /**
@@ -589,7 +706,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(triggerLink, "", isNameBased);
             var id = this.getIdFromLink(triggerLink, isNameBased);
             
-            this.read(path, "triggers", id, undefined, options, callback);
+            return this.read(path, "triggers", id, undefined, options, callback);
         },
         
         /**
@@ -629,7 +746,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(sprocLink, "", isNameBased);
             var id = this.getIdFromLink(sprocLink, isNameBased);
             
-            this.read(path, "sprocs", id, undefined, options, callback);
+            return this.read(path, "sprocs", id, undefined, options, callback);
         },
         
         /**
@@ -649,7 +766,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(conflictLink, "", isNameBased);
             var id = this.getIdFromLink(conflictLink, isNameBased);
             
-            this.read(path, "conflicts", id, undefined, options, callback);
+            return this.read(path, "conflicts", id, undefined, options, callback);
         },
         
         /** Lists all databases.
@@ -1156,7 +1273,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(documentLink, "", isNameBased);
             var id = this.getIdFromLink(documentLink, isNameBased);
             
-            this.deleteResource(path, "docs", id, undefined, options, callback);
+            return this.deleteResource(path, "docs", id, undefined, options, callback);
         },
         
         /**
@@ -1196,7 +1313,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(userLink, "", isNameBased);
             var id = this.getIdFromLink(userLink, isNameBased);
             
-            this.deleteResource(path, "users", id, undefined, options, callback);
+            return this.deleteResource(path, "users", id, undefined, options, callback);
         },
         
         /**
@@ -1256,7 +1373,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(udfLink, "", isNameBased);
             var id = this.getIdFromLink(udfLink, isNameBased);
             
-            this.deleteResource(path, "udfs", id, undefined, options, callback);
+            return this.deleteResource(path, "udfs", id, undefined, options, callback);
         },
         
         /**
@@ -1296,7 +1413,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(conflictLink, "", isNameBased);
             var id = this.getIdFromLink(conflictLink, isNameBased);
             
-            this.deleteResource(path, "conflicts", id, undefined, options, callback);
+            return this.deleteResource(path, "conflicts", id, undefined, options, callback);
         },
         
         /**
@@ -1309,21 +1426,35 @@ var DocumentClient = Base.defineClass(
          * @param {RequestCallback} callback - The callback for the request.
         */
         replaceCollection: function (collectionLink, collection, options, callback) {
-            var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+            var self = this;
+            var optionsCallbackTuple = self.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var err = {};
-            if (!this.isResourceValid(collection, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(collection, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = self.getPathFromLink(collectionLink, "", isNameBased);
+                    var id = self.getIdFromLink(collectionLink, isNameBased);
+
+                    self.replace(collection, path, "colls", id, undefined, options).then(response, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceCollectionSuccess(replaceCollectionHash) {
+                        callback(replaceCollectionHash.error, replaceCollectionHash.response, replaceCollectionHash.headers);
+                    },
+                    function replaceCollectionFailure(replaceCollectionHash) {
+                        callback(replaceCollectionHash.error, replaceCollectionHash.response, replaceCollectionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.replace(collection, path, "colls", id, undefined, options, callback);
         },
         
         /**
@@ -1340,32 +1471,49 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var that = this;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var task = function () {
+                    var err = {};
+                    if (!self.isResourceValid(newDocument, err)) {
+                        reject({ error: err, response: undefined, headers: undefined });
+                    } else {
+                        var isNameBased = Base.isLinkNameBased(documentLink);
+                        var path = self.getPathFromLink(documentLink, "", isNameBased);
+                        var id = self.getIdFromLink(documentLink, isNameBased);
+
+                        self.replace(newDocument, path, "docs", id, undefined, options).then(resolve, reject);
+                    }
+                };
             
-            var task = function () {
-                var err = {};
-                if (!that.isResourceValid(newDocument, err)) {
-                    callback(err);
-                    return;
+                if (options.partitionKey === undefined) {
+                    self.getPartitionKeyDefinition(Base.getCollectionLink(documentLink)).then(
+                        function (response) {
+                            options.partitionKey = self.extractPartitionKey(newDocument, response.partitionKeyDefinition);
+
+                            task();
+                        },
+                        function (rejection) {
+                            // Omit 'partitionKeyDefinition'.
+                            reject({ error: rejection.error, items: rejection.items, headers: rejection.headers });
+                        }
+                    );
                 }
-                
-                var isNameBased = Base.isLinkNameBased(documentLink);
-                var path = that.getPathFromLink(documentLink, "", isNameBased);
-                var id = that.getIdFromLink(documentLink, isNameBased);
-                
-                that.replace(newDocument, path, "docs", id, undefined, options, callback);
-            };
-            
-            if (options.partitionKey === undefined) {
-                this.getPartitionKeyDefinition(Base.getCollectionLink(documentLink), function (err, partitionKeyDefinition, response, headers) {
-                    if (err) return callback(err, response, headers);
-                    options.partitionKey = that.extractPartitionKey(newDocument, partitionKeyDefinition);
-                    
+                else {
                     task();
-                });
-            }
-            else {
-                task();
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceDocumentSuccess(replaceDocumentHash) {
+                        callback(replaceDocumentHash.error, replaceDocumentHash.response, replaceDocumentHash.headers);
+                    },
+                    function replaceDocumentFailure(replaceDocumentHash) {
+                        callback(replaceDocumentHash.error, replaceDocumentHash.response, replaceDocumentHash.headers);
+                    }
+                );
             }
         },
         
@@ -1379,21 +1527,35 @@ var DocumentClient = Base.defineClass(
          * @param {RequestCallback} callback - The callback for the request.
          */
         replaceAttachment: function (attachmentLink, attachment, options, callback) {
-            var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
+            var optionsCallbackTuple = self.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var err = {};
-            if (!this.isResourceValid(attachment, err)) {
-                callback(err);
-                return;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(attachment, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(attachmentLink);
+                    var path = self.getPathFromLink(attachmentLink, "", isNameBased);
+                    var id = self.getIdFromLink(attachmentLink, isNameBased);
+
+                    self.replace(attachment, path, "attachments", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceAttachmentSuccess(replaceAttachmentHash) {
+                        callback(replaceAttachmentHash.error, replaceAttachmentHash.response, replaceAttachmentHash.headers);
+                    },
+                    function replaceAttachmentFailure(replaceAttachmentHash) {
+                        callback(replaceAttachmentHash.error, replaceAttachmentHash.response, replaceAttachmentHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(attachmentLink);
-            var path = this.getPathFromLink(attachmentLink, "", isNameBased);
-            var id = this.getIdFromLink(attachmentLink, isNameBased);
-            
-            this.replace(attachment, path, "attachments", id, undefined, options, callback);
         },
         
         /**
@@ -1409,18 +1571,32 @@ var DocumentClient = Base.defineClass(
             var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
-            
-            var err = {};
-            if (!this.isResourceValid(user, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(user, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(userLink);
+                    var path = self.getPathFromLink(userLink, "", isNameBased);
+                    var id = self.getIdFromLink(userLink, isNameBased);
+
+                    self.replace(user, path, "users", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceUserSuccess(replaceUserHash) {
+                        callback(replaceUserHash.error, replaceUserHash.response, replaceUserHash.headers);
+                    },
+                    function replaceUserFailure(replaceUserHash) {
+                        callback(replaceUserHash.error, replaceUserHash.response, replaceUserHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(userLink);
-            var path = this.getPathFromLink(userLink, "", isNameBased);
-            var id = this.getIdFromLink(userLink, isNameBased);
-            
-            this.replace(user, path, "users", id, undefined, options, callback);
         },
         
         /**
@@ -1436,18 +1612,32 @@ var DocumentClient = Base.defineClass(
             var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
-            
-            var err = {};
-            if (!this.isResourceValid(permission, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(permission, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(permissionLink);
+                    var path = self.getPathFromLink(permissionLink, "", isNameBased);
+                    var id = self.getIdFromLink(permissionLink, isNameBased);
+
+                    self.replace(permission, path, "permissions", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replacePermissionSuccess(replacePermissionHash) {
+                        callback(replacePermissionHash.error, replacePermissionHash.response, replacePermissionHash.headers);
+                    },
+                    function replacePermissionFailure(replacePermissionHash) {
+                        callback(replacePermissionHash.error, replacePermissionHash.response, replacePermissionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(permissionLink);
-            var path = this.getPathFromLink(permissionLink, "", isNameBased);
-            var id = this.getIdFromLink(permissionLink, isNameBased);
-            
-            this.replace(permission, path, "permissions", id, undefined, options, callback);
         },
         
         /**
@@ -1469,18 +1659,32 @@ var DocumentClient = Base.defineClass(
             } else if (trigger.body) {
                 trigger.body = trigger.body.toString();
             }
-            
-            var err = {};
-            if (!this.isResourceValid(trigger, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(trigger, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(triggerLink);
+                    var path = self.getPathFromLink(triggerLink, "", isNameBased);
+                    var id = self.getIdFromLink(triggerLink, isNameBased);
+
+                    self.replace(trigger, path, "triggers", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceTriggerSuccess(replaceTriggerHash) {
+                        callback(replaceTriggerHash.error, replaceTriggerHash.response, replaceTriggerHash.headers);
+                    },
+                    function replaceTriggerFailure(replaceTriggerHash) {
+                        callback(replaceTriggerHash.error, replaceTriggerHash.response, replaceTriggerHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(triggerLink);
-            var path = this.getPathFromLink(triggerLink, "", isNameBased);
-            var id = this.getIdFromLink(triggerLink, isNameBased);
-            
-            this.replace(trigger, path, "triggers", id, undefined, options, callback);
         },
         
         /**
@@ -1502,18 +1706,32 @@ var DocumentClient = Base.defineClass(
             } else if (udf.body) {
                 udf.body = udf.body.toString();
             }
-            
-            var err = {};
-            if (!this.isResourceValid(udf, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(udf, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(udfLink);
+                    var path = self.getPathFromLink(udfLink, "", isNameBased);
+                    var id = self.getIdFromLink(udfLink, isNameBased);
+
+                    self.replace(udf, path, "udfs", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceUserDefinedFunctionSuccess(replaceUserDefinedFunctionHash) {
+                        callback(replaceUserDefinedFunctionHash.error, replaceUserDefinedFunctionHash.response, replaceUserDefinedFunctionHash.headers);
+                    },
+                    function replaceUserDefinedFunctionFailure(replaceUserDefinedFunctionHash) {
+                        callback(replaceUserDefinedFunctionHash.error, replaceUserDefinedFunctionHash.response, replaceUserDefinedFunctionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(udfLink);
-            var path = this.getPathFromLink(udfLink, "", isNameBased);
-            var id = this.getIdFromLink(udfLink, isNameBased);
-            
-            this.replace(udf, path, "udfs", id, undefined, options, callback);
         },
         
         /**
@@ -1535,18 +1753,32 @@ var DocumentClient = Base.defineClass(
             } else if (sproc.body) {
                 sproc.body = sproc.body.toString();
             }
-            
-            var err = {};
-            if (!this.isResourceValid(sproc, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(sproc, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(sprocLink);
+                    var path = self.getPathFromLink(sprocLink, "", isNameBased);
+                    var id = self.getIdFromLink(sprocLink, isNameBased);
+
+                    self.replace(sproc, path, "sprocs", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceStoredProcedureSuccess(replaceStoredProcedureHash) {
+                        callback(replaceStoredProcedureHash.error, replaceStoredProcedureHash.response, replaceStoredProcedureHash.headers);
+                    },
+                    function replaceStoredProcedureFailure(replaceStoredProcedureHash) {
+                        callback(replaceStoredProcedureHash.error, replaceStoredProcedureHash.response, replaceStoredProcedureHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(sprocLink);
-            var path = this.getPathFromLink(sprocLink, "", isNameBased);
-            var id = this.getIdFromLink(sprocLink, isNameBased);
-            
-            this.replace(sproc, path, "sprocs", id, undefined, options, callback);
         },
         
         /**
@@ -1575,7 +1807,7 @@ var DocumentClient = Base.defineClass(
                 collectionLink = this.resolveCollectionLinkForCreate(partitionResolver, body);
             }
             
-            this.upsertDocumentPrivate(collectionLink, body, options, callback);
+            return this.upsertDocumentPrivate(collectionLink, body, options, callback);
         },
         
         /**
@@ -1597,19 +1829,33 @@ var DocumentClient = Base.defineClass(
             var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
-            
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(documentLink);
+                    var path = self.getPathFromLink(documentLink, "attachments", isNameBased);
+                    var id = self.getIdFromLink(documentLink, isNameBased);
+
+                    self.upsert(body, path, "attachments", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertAttachmentSuccess(upsertAttachmentHash) {
+                        callback(upsertAttachmentHash.error, upsertAttachmentHash.response, upsertAttachmentHash.headers);
+                    },
+                    function upsertAttachmentFailure(upsertAttachmentHash) {
+                        callback(upsertAttachmentHash.error, upsertAttachmentHash.response, upsertAttachmentHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(documentLink);
-            var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
-            var id = this.getIdFromLink(documentLink, isNameBased);
-            
-            this.upsert(body, path, "attachments", id, undefined, options, callback);
-        },
+       },
         
         /**
          * Upsert a database user.
@@ -1625,19 +1871,33 @@ var DocumentClient = Base.defineClass(
             var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
-            
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(databaseLink);
+                    var path = self.getPathFromLink(databaseLink, "users", isNameBased);
+                    var id = self.getIdFromLink(databaseLink, isNameBased);
+
+                    self.upsert(body, path, "users", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertUserSuccess(upsertUserHash) {
+                        callback(upsertUserHash.error, upsertUserHash.response, upsertUserHash.headers);
+                    },
+                    function upsertUserFailure(upsertUserHash) {
+                        callback(upsertUserHash.error, upsertUserHash.response, upsertUserHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(databaseLink);
-            var path = this.getPathFromLink(databaseLink, "users", isNameBased);
-            var id = this.getIdFromLink(databaseLink, isNameBased);
-            
-            this.upsert(body, path, "users", id, undefined, options, callback);
-        },
+       },
         
         /**
          * Upsert a permission.
@@ -1656,18 +1916,32 @@ var DocumentClient = Base.defineClass(
             var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
-            
-            var err = {};
-            if (!this.isResourceValid(body, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(body, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(userLink);
+                    var path = self.getPathFromLink(userLink, "permissions", isNameBased);
+                    var id = self.getIdFromLink(userLink, isNameBased);
+
+                    self.upsert(body, path, "permissions", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertPermissionSuccess(upsertPermissionHash) {
+                        callback(upsertPermissionHash.error, upsertPermissionHash.response, upsertPermissionHash.headers);
+                    },
+                    function upsertPermissionFailure(upsertPermissionHash) {
+                        callback(upsertPermissionHash.error, upsertPermissionHash.response, upsertPermissionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(userLink);
-            var path = this.getPathFromLink(userLink, "permissions", isNameBased);
-            var id = this.getIdFromLink(userLink, isNameBased);
-            
-            this.upsert(body, path, "permissions", id, undefined, options, callback);
         },
         
         /**
@@ -1697,18 +1971,32 @@ var DocumentClient = Base.defineClass(
             } else if (trigger.body) {
                 trigger.body = trigger.body.toString();
             }
-            
-            var err = {};
-            if (!this.isResourceValid(trigger, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(trigger, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = self.getPathFromLink(collectionLink, "triggers", isNameBased);
+                    var id = self.getIdFromLink(collectionLink, isNameBased);
+
+                    self.upsert(trigger, path, "triggers", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertTriggerSuccess(upsertTriggerHash) {
+                        callback(upsertTriggerHash.error, upsertTriggerHash.response, upsertTriggerHash.headers);
+                    },
+                    function upsertTriggerFailure(upsertTriggerHash) {
+                        callback(upsertTriggerHash.error, upsertTriggerHash.response, upsertTriggerHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "triggers", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.upsert(trigger, path, "triggers", id, undefined, options, callback);
         },
         
         /**
@@ -1737,18 +2025,32 @@ var DocumentClient = Base.defineClass(
             } else if (udf.body) {
                 udf.body = udf.body.toString();
             }
-            
-            var err = {};
-            if (!this.isResourceValid(udf, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(udf, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = self.getPathFromLink(collectionLink, "udfs", isNameBased);
+                    var id = self.getIdFromLink(collectionLink, isNameBased);
+
+                    self.upsert(udf, path, "udfs", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertUserDefinedFunctionSuccess(upsertUserDefinedFunctionHash) {
+                        callback(upsertUserDefinedFunctionHash.error, upsertUserDefinedFunctionHash.response, upsertUserDefinedFunctionHash.headers);
+                    },
+                    function upsertUserDefinedFunctionFailure(upsertUserDefinedFunctionHash) {
+                        callback(upsertUserDefinedFunctionHash.error, upsertUserDefinedFunctionHash.response, upsertUserDefinedFunctionHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "udfs", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.upsert(udf, path, "udfs", id, undefined, options, callback);
         },
         
         /**
@@ -1777,18 +2079,32 @@ var DocumentClient = Base.defineClass(
             } else if (sproc.body) {
                 sproc.body = sproc.body.toString();
             }
-            
-            var err = {};
-            if (!this.isResourceValid(sproc, err)) {
-                callback(err);
-                return;
+
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!self.isResourceValid(sproc, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var isNameBased = Base.isLinkNameBased(collectionLink);
+                    var path = self.getPathFromLink(collectionLink, "sprocs", isNameBased);
+                    var id = self.getIdFromLink(collectionLink, isNameBased);
+
+                    self.upsert(sproc, path, "sprocs", id, undefined, options).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertStoredProcedureSuccess(upsertStoredProcedureHash) {
+                        callback(upsertStoredProcedureHash.error, upsertStoredProcedureHash.response, upsertStoredProcedureHash.headers);
+                    },
+                    function upsertStoredProcedureFailure(upsertStoredProcedureHash) {
+                        callback(upsertStoredProcedureHash.error, upsertStoredProcedureHash.response, upsertStoredProcedureHash.headers);
+                    }
+                );
             }
-            
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var path = this.getPathFromLink(collectionLink, "sprocs", isNameBased);
-            var id = this.getIdFromLink(collectionLink, isNameBased);
-            
-            this.upsert(sproc, path, "sprocs", id, undefined, options, callback);
         },
         
         /**
@@ -1822,7 +2138,7 @@ var DocumentClient = Base.defineClass(
             var path = this.getPathFromLink(documentLink, "attachments", isNameBased);
             var id = this.getIdFromLink(documentLink, isNameBased);
             
-            this.upsert(readableStream, path, "attachments", id, initialHeaders, options, callback);
+            return this.upsert(readableStream, path, "attachments", id, initialHeaders, options, callback);
         },
         
         /**
@@ -1885,11 +2201,27 @@ var DocumentClient = Base.defineClass(
             var headers = Base.getHeaders(this, initialHeaders, "put", path, attachmentId, "media", options);
 
             // updateMedia will use WriteEndpoint since it uses PUT operation
-            var that = this;
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.put(writeEndpoint, path, readableStream, headers, callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self._globalEndpointManager.getWriteEndpoint().then(
+                    function (writeEndpoint) {
+                        self.put(writeEndpoint, path, readableStream, headers).then(resolve, reject);
+                    }
+                );
             });
-        },
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function updateMediaSuccess(updateMediaHash) {
+                        callback(updateMediaHash.error, updateMediaHash.response, updateMediaHash.headers);
+                    },
+                    function updateMediaFailure(updateMediaHash) {
+                        callback(updateMediaHash.error, updateMediaHash.response, updateMediaHash.headers);
+                    }
+                );
+            }
+       },
         
         /**
          * Execute the StoredProcedure represented by the object with partition key.
@@ -1927,10 +2259,26 @@ var DocumentClient = Base.defineClass(
             var headers = Base.getHeaders(this, initialHeaders, "post", path, id, "sprocs", options);
             
             // executeStoredProcedure will use WriteEndpoint since it uses POST operation
-            var that = this;
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, params, headers, callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self._globalEndpointManager.getWriteEndpoint().then(
+                    function (writeEndpoint) {
+                        self.post(writeEndpoint, path, params, headers).then(resolve, reject);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function executeStoredProcedureSuccess(executeStoredProcedureHash) {
+                        callback(executeStoredProcedureHash.error, executeStoredProcedureHash.response, executeStoredProcedureHash.headers);
+                    },
+                    function executeStoredProcedureFailure(executeStoredProcedureHash) {
+                        callback(executeStoredProcedureHash.error, executeStoredProcedureHash.response, executeStoredProcedureHash.headers);
+                    }
+                );
+            }
         },
         
         /**
@@ -1942,15 +2290,28 @@ var DocumentClient = Base.defineClass(
          * @param {RequestCallback} callback - The callback for the request.
          */
         replaceOffer: function (offerLink, offer, callback) {
-            var err = {};
-            if (!this.isResourceValid(offer, err)) {
-                callback(err);
-                return;
+            var promise = new Promise(function (resolve, reject) {
+                var err = {};
+                if (!this.isResourceValid(offer, err)) {
+                    reject({ error: err, response: undefined, headers: undefined });
+                } else {
+                    var path = "/" + offerLink;
+                    var id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
+                    this.replace(offer, path, "offers", id, undefined, {}).then(resolve, reject);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceOfferSuccess(replaceOfferHash) {
+                        callback(replaceOfferHash.error, replaceOfferHash.response, replaceOfferHash.headers);
+                    },
+                    function replaceOfferFailure(replaceOfferHash) {
+                        callback(replaceOfferHash.error, replaceOfferHash.response, replaceOfferHash.headers);
+                    }
+                );
             }
-            
-            var path = "/" + offerLink;
-            var id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
-            this.replace(offer, path, "offers", id, undefined, {}, callback);
         },
         
         /** Reads an offer.
@@ -1962,7 +2323,7 @@ var DocumentClient = Base.defineClass(
         readOffer: function (offerLink, callback) {
             var path = "/" + offerLink;
             var id = Base.parseLink(offerLink).objectBody.id.toLowerCase();
-            this.read(path, "offers", id, undefined, {}, callback);
+            return this.read(path, "offers", id, undefined, {}, callback);
         },
         
         /** Lists all offers.
@@ -2011,28 +2372,46 @@ var DocumentClient = Base.defineClass(
 
             var urlConnection = options.urlConnection || this.urlConnection;
 
-            var headers = Base.getHeaders(this, this.defaultHeaders, "get", "", "", "", {});
-            this.get(urlConnection, "", headers, function (err, result, headers) {
-                if (err) return callback(err);
+            var self = this;
+            var headers = Base.getHeaders(self, self.defaultHeaders, "get", "", "", "", {});
+            var promise = new Promise(function (resolve, reject) {
+                self.get(urlConnection, "", headers).then(
+                    function (err, result, headers) {
+                        var databaseAccount = new AzureDocuments.DatabaseAccount();
+                        databaseAccount.DatabasesLink = "/dbs/";
+                        databaseAccount.MediaLink = "/media/";
+                        databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
+                        databaseAccount.CurrentMediaStorageUsageInMB = headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
+                        databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
                 
-                var databaseAccount = new AzureDocuments.DatabaseAccount();
-                databaseAccount.DatabasesLink = "/dbs/";
-                databaseAccount.MediaLink = "/media/";
-                databaseAccount.MaxMediaStorageUsageInMB = headers[Constants.HttpHeaders.MaxMediaStorageUsageInMB];
-                databaseAccount.CurrentMediaStorageUsageInMB = headers[Constants.HttpHeaders.CurrentMediaStorageUsageInMB];
-                databaseAccount.ConsistencyPolicy = result.userConsistencyPolicy;
+                        // WritableLocations and ReadableLocations properties will be available only for geo-replicated database accounts
+                        if (Constants.WritableLocations in result) {
+                            databaseAccount._writableLocations = result[Constants.WritableLocations];
+                        }
+                        if (Constants.ReadableLocations in result) {
+                            databaseAccount._readableLocations = result[Constants.ReadableLocations];
+                        }
                 
-                // WritableLocations and ReadableLocations properties will be available only for geo-replicated database accounts
-                if (Constants.WritableLocations in result) {
-                    databaseAccount._writableLocations = result[Constants.WritableLocations];
-                }
-                if (Constants.ReadableLocations in result) {
-                    databaseAccount._readableLocations = result[Constants.ReadableLocations];
-                }
-                
-                callback(undefined, databaseAccount, headers);
+                        resolve({ error: undefined, databaseAccount: databaseAccount, headers: headers });
+                    },
+                    function (rejection) {
+                        reject({ error: rejection.error, databaseAccount: undefined, headers: undefined });
+                    }
+                );
             });
-        },
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function getDatabaseAccountSuccess(getDatabaseAccountHash) {
+                        callback(getDatabaseAccountHash.error, getDatabaseAccountHash.databaseAccount, getDatabaseAccountHash.headers);
+                    },
+                    function getDatabaseAccountFailure(getDatabaseAccountHash) {
+                        callback(getDatabaseAccountHash.error, getDatabaseAccountHash.databaseAccount, getDatabaseAccountHash.headers);
+                    }
+                );
+            }
+       },
         
         /** @ignore */
         createDocumentPrivate: function (collectionLink, body, options, callback) {
@@ -2040,37 +2419,54 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var that = this;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var task = function () {
+                    // Generate random document id if the id is missing in the payload and options.disableAutomaticIdGeneration != true
+                    if ((body.id === undefined || body.id === "") && !options.disableAutomaticIdGeneration) {
+                        body.id = Base.generateGuidId();
+                    }
+                
+                    var err = {};
+                    if (!self.isResourceValid(body, err)) {
+                        reject({ error: err, response: undefined, headers: undefined });
+                    } else {
+                        var isNameBased = Base.isLinkNameBased(collectionLink);
+                        var path = self.getPathFromLink(collectionLink, "docs", isNameBased);
+                        var id = self.getIdFromLink(collectionLink, isNameBased);
+
+                        self.create(body, path, "docs", id, undefined, options).then(resolve, reject);
+                    }
+                };
             
-            var task = function () {
-                // Generate random document id if the id is missing in the payload and options.disableAutomaticIdGeneration != true
-                if ((body.id === undefined || body.id === "") && !options.disableAutomaticIdGeneration) {
-                    body.id = Base.generateGuidId();
+                if (options.partitionKey === undefined) {
+                    this.getPartitionKeyDefinition(collectionLink).then(
+                        function (response) {
+                            options.partitionKey = self.extractPartitionKey(body, response.partitionKeyDefinition);
+
+                            task();
+                        },
+                        function (rejection) {
+                            // Omit 'partitionKeyDefinition'.
+                            reject({ error: rejection.error, items: rejection.items, headers: rejection.headers });
+                        }
+                    );
                 }
-                
-                var err = {};
-                if (!that.isResourceValid(body, err)) {
-                    callback(err);
-                    return;
-                }
-                
-                var isNameBased = Base.isLinkNameBased(collectionLink);
-                var path = that.getPathFromLink(collectionLink, "docs", isNameBased);
-                var id = that.getIdFromLink(collectionLink, isNameBased);
-                
-                that.create(body, path, "docs", id, undefined, options, callback);
-            };
-            
-            if (options.partitionKey === undefined) {
-                this.getPartitionKeyDefinition(collectionLink, function (err, partitionKeyDefinition, response, headers) {
-                    if (err) return callback(err, response, headers);
-                    options.partitionKey = that.extractPartitionKey(body, partitionKeyDefinition);
-                    
+                else {
                     task();
-                });
-            }
-            else {
-                task();
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function createDocumentPrivateSuccess(createDocumentPrivateHash) {
+                        callback(createDocumentPrivateHash.error, createDocumentPrivateHash.response, createDocumentPrivateHash.headers);
+                    },
+                    function createDocumentPrivateFailure(createDocumentPrivateHash) {
+                        callback(createDocumentPrivateHash.error, createDocumentPrivateHash.response, createDocumentPrivateHash.headers);
+                    }
+                );
             }
         },
         
@@ -2080,37 +2476,54 @@ var DocumentClient = Base.defineClass(
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var that = this;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var task = function () {
+                    // Generate random document id if the id is missing in the payload and options.disableAutomaticIdGeneration != true
+                    if ((body.id === undefined || body.id === "") && !options.disableAutomaticIdGeneration) {
+                        body.id = Base.generateGuidId();
+                    }
+                
+                    var err = {};
+                    if (!self.isResourceValid(body, err)) {
+                        reject({ error: err, response: undefined, headers: undefined });
+                    } else {
+                        var isNameBased = Base.isLinkNameBased(collectionLink);
+                        var path = self.getPathFromLink(collectionLink, "docs", isNameBased);
+                        var id = self.getIdFromLink(collectionLink, isNameBased);
+
+                        self.upsert(body, path, "docs", id, undefined, options).then(resolve, reject);
+                    }
+                };
             
-            var task = function () {
-                // Generate random document id if the id is missing in the payload and options.disableAutomaticIdGeneration != true
-                if ((body.id === undefined || body.id === "") && !options.disableAutomaticIdGeneration) {
-                    body.id = Base.generateGuidId();
+                if (options.partitionKey === undefined) {
+                    self.getPartitionKeyDefinition(collectionLink).then(
+                        function (response) {
+                            options.partitionKey = self.extractPartitionKey(body, response.partitionKeyDefinition);
+
+                            task();
+                        },
+                        function (rejection) {
+                            // Omit 'partitionKeyDefinition'.
+                            reject({ error: rejection.error, items: rejection.items, headers: rejection.headers });
+                        }
+                    );
                 }
-                
-                var err = {};
-                if (!that.isResourceValid(body, err)) {
-                    callback(err);
-                    return;
-                }
-                
-                var isNameBased = Base.isLinkNameBased(collectionLink);
-                var path = that.getPathFromLink(collectionLink, "docs", isNameBased);
-                var id = that.getIdFromLink(collectionLink, isNameBased);
-                
-                that.upsert(body, path, "docs", id, undefined, options, callback);
-            };
-            
-            if (options.partitionKey === undefined) {
-                this.getPartitionKeyDefinition(collectionLink, function (err, partitionKeyDefinition, response, headers) {
-                    if (err) return callback(err, response, headers);
-                    options.partitionKey = that.extractPartitionKey(body, partitionKeyDefinition);
-                    
+                else {
                     task();
-                });
-            }
-            else {
-                task();
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertDocumentPrivateSuccess(upsertDocumentPrivateHash) {
+                        callback(upsertDocumentPrivateHash.error, upsertDocumentPrivateHash.response, upsertDocumentPrivateHash.headers);
+                    },
+                    function upsertDocumentPrivateFailure(upsertDocumentPrivateHash) {
+                        callback(upsertDocumentPrivateHash.error, upsertDocumentPrivateHash.response, upsertDocumentPrivateHash.headers);
+                    }
+                );
             }
         },
         
@@ -2142,14 +2555,31 @@ var DocumentClient = Base.defineClass(
         
         /** @ignore */
         create: function (body, path, type, id, initialHeaders, options, callback) {
-            initialHeaders = initialHeaders || this.defaultHeaders;
-            var headers = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
+            var self = this;
+            initialHeaders = initialHeaders || self.defaultHeaders;
+            var promise = new Promise(function (resolve, reject) {
+                var headers = Base.getHeaders(self, initialHeaders, "post", path, id, type, options);
 
-            var that = this;
-            // create will use WriteEndpoint since it uses POST operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, body, headers, callback);
+                // create will use WriteEndpoint since it uses POST operation
+                self._globalEndpointManager.getWriteEndpoint().then(
+                    function (response) {
+                        self.post(response.writeEndpoint, path, body, headers).then(resolve, reject);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    //TODO
+                    function createSuccess(createHash) {
+                        callback(createHash.error || createHash.message, createHash.response, createHash.headers);
+                    },
+                    function createFailure(createHash) {
+                        callback(createHash.error || createHash.message, createHash.response, createHash.headers);
+                    }
+                );
+            }
         },
         
         /** @ignore */
@@ -2158,11 +2588,26 @@ var DocumentClient = Base.defineClass(
             var headers = Base.getHeaders(this, initialHeaders, "post", path, id, type, options);
             this.setIsUpsertHeader(headers);
 
-            var that = this;
-            // upsert will use WriteEndpoint since it uses POST operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.post(writeEndpoint, path, body, headers, callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                // upsert will use WriteEndpoint since it uses POST operation
+                self._globalEndpointManager.getWriteEndpoint().then(
+                    function (writeEndpoint) {
+                        self.post(writeEndpoint, path, body, headers).then(resolve, reject);
+                    });
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function upsertSuccess(upsertHash) {
+                        callback(upsertHash.error, upsertHash.response, upsertHash.headers);
+                    },
+                    function upsertFailure(upsertHash) {
+                        callback(upsertHash.error, upsertHash.response, upsertHash.headers);
+                    }
+                );
+            }
         },
         
         /** @ignore */
@@ -2170,11 +2615,27 @@ var DocumentClient = Base.defineClass(
             initialHeaders = initialHeaders || this.defaultHeaders;
             var headers = Base.getHeaders(this, initialHeaders, "put", path, id, type, options);
             
-            var that = this;
-            // replace will use WriteEndpoint since it uses PUT operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.put(writeEndpoint, path, resource, headers, callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                // replace will use WriteEndpoint since it uses PUT operation
+                self._globalEndpointManager.getWriteEndpoint().then(
+                    function (writeEndpoint) {
+                        self.put(writeEndpoint, path, resource, headers).then(resolve, reject);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function replaceSuccess(replaceHash) {
+                        callback(replaceHash.error, replaceHash.response, replaceHash.headers);
+                    },
+                    function replaceFailure(replaceHash) {
+                        callback(replaceHash.error, replaceHash.response, replaceHash.headers);
+                    }
+                );
+            }
         },
         
         /** @ignore */
@@ -2182,11 +2643,27 @@ var DocumentClient = Base.defineClass(
             initialHeaders = initialHeaders || this.defaultHeaders;
             var headers = Base.getHeaders(this, initialHeaders, "get", path, id, type, options);
 
-            var that = this;
-            // read will use ReadEndpoint since it uses GET operation
-            this._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                that.get(readEndpoint, path, headers, callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                // read will use ReadEndpoint since it uses GET operation
+                self._globalEndpointManager.getReadEndpoint().then(
+                    function (readEndpoint) {
+                        self.get(readEndpoint, path, headers).then(resolve, reject);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function readSuccess(readHash) {
+                        callback(readHash.error, readHash.response, readHash.headers);
+                    },
+                    function readFailure(readHash) {
+                        callback(readHash.error, readHash.response, readHash.headers);
+                    }
+                );
+            }
         },
         
         /** @ignore */
@@ -2194,11 +2671,27 @@ var DocumentClient = Base.defineClass(
             initialHeaders = initialHeaders || this.defaultHeaders;
             var headers = Base.getHeaders(this, initialHeaders, "delete", path, id, type, options);
 
-            var that = this;
-            // deleteResource will use WriteEndpoint since it uses DELETE operation
-            this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
-                that.delete(writeEndpoint, path, headers, callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                // deleteResource will use WriteEndpoint since it uses DELETE operation
+                self._globalEndpointManager.getWriteEndpoint().then(
+                    function (writeEndpoint) {
+                        self.delete(writeEndpoint, path, headers).then(resolve, reject);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function deleteSuccess(deleteHash) {
+                        callback(deleteHash.error, deleteHash.response, deleteHash.headers);
+                    },
+                    function deleteFailure(deleteHash) {
+                        callback(deleteHash.error, deleteHash.response, deleteHash.headers);
+                    }
+                );
+            }
         },
         
         /** @ignore */
@@ -2232,18 +2725,35 @@ var DocumentClient = Base.defineClass(
         * @param {function} callback       - The arguments to the callback are(in order): error, partitionKeyDefinition, response object and response headers
         */
         getPartitionKeyDefinition: function (collectionLink, callback) {
-            // $ISSUE-felixfan-2016-03-17: Make name based path and link based path use the same key
-            // $ISSUE-felixfan-2016-03-17: Refresh partitionKeyDefinitionCache when necessary
-            if (collectionLink in this.partitionKeyDefinitionCache) {
-                return callback(undefined, this.partitionKeyDefinitionCache[collectionLink]);
-            }
-            
-            var that = this;
-            
-            this.readCollection(collectionLink, function (err, collection, headers) {
-                if (err) return callback(err, undefined, collection, headers);
-                callback(err, that.partitionKeyDefinitionCache[collectionLink], collection, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                // $ISSUE-felixfan-2016-03-17: Make name based path and link based path use the same key
+                // $ISSUE-felixfan-2016-03-17: Refresh partitionKeyDefinitionCache when necessary
+                if (collectionLink in self.partitionKeyDefinitionCache) {
+                    resolve({ error: undefined, partitionKeyDefinition: self.partitionKeyDefinitionCache[collectionLink], items: undefined, headers: undefined });
+                } else {
+                    self.readCollection(collectionLink).then(
+                        function (response) {
+                            resolve({ error: response.error, partitionKeyDefinition: self.partitionKeyDefinitionCache[collectionLink], items: response.collection, headers: response.headers });
+                        },
+                        function (rejection) {
+                            reject({ error: rejection.error, partitionKeyDefinition: undefined, items: rejection.collection, header: rejection.headers });
+                        }
+                    );
+                }
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function getPartitionKeyDefinitionSuccess(getPartitionKeyDefinitionHash) {
+                        callback(getPartitionKeyDefinitionHash.error, getPartitionKeyDefinitionHash.partitionKeyDefinition, getPartitionKeyDefinitionHash.items, getPartitionKeyDefinitionHash.headers);
+                    },
+                    function getPartitionKeyDefinitionFailure(getPartitionKeyDefinitionHash) {
+                        callback(getPartitionKeyDefinitionHash.error, getPartitionKeyDefinitionHash.partitionKeyDefinition, getPartitionKeyDefinitionHash.items, getPartitionKeyDefinitionHash.headers);
+                    }
+                );
+            }
         },
         
         extractPartitionKey: function (document, partitionKeyDefinition) {
@@ -2273,54 +2783,73 @@ var DocumentClient = Base.defineClass(
         
         /** @ignore */
         queryFeed: function (documentclient, path, type, id, resultFn, createFn, query, options, callback, partitionKeyRangeId) {
-            var that = this;
+            var self = this;
             
             var optionsCallbackTuple = this.validateOptionsAndCallback(options, callback);
             options = optionsCallbackTuple.options;
             callback = optionsCallbackTuple.callback;
             
-            var successCallback = function (err, result, responseHeaders) {
-                if (err) return callback(err, undefined, responseHeaders);
-                var bodies;
-                if (query) {
-                    bodies = resultFn(result);
-                }
-                else {
-                    bodies = Base.map(resultFn(result), function (body) {
-                        return createFn(that, body);
-                    });
-                }
-                
-                callback(undefined, bodies, responseHeaders);
-            };
-            
-            // Query operations will use ReadEndpoint even though it uses GET(for queryFeed) and POST(for regular query operations)
-            this._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
-                var initialHeaders = Base.extend({}, documentclient.defaultHeaders);
-                if (query === undefined) {
-                    var headers = Base.getHeaders(documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
+            var promise = new Promise(function (resolve, reject) {
+                var successCallback = function (err, result, responseHeaders) {
+                    if (err) {
+                        reject({ error: err, response: undefined, headers: responseHeaders });
+                    } else {
+                        var bodies;
+                        if (query) {
+                            bodies = resultFn(result);
+                        }
+                        else {
+                            bodies = Base.map(resultFn(result), function (body) {
+                                return createFn(self, body);
+                            });
+                        }
 
-                    documentclient.get(readEndpoint, path, headers, successCallback);
-                } else {
-                    initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
-                    switch (that.queryCompatibilityMode) {
-                        case AzureDocuments.QueryCompatibilityMode.SqlQuery:
-                            initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.SQL;
-                            break;
-                        case AzureDocuments.QueryCompatibilityMode.Query:
-                        case AzureDocuments.QueryCompatibilityMode.Default:
-                        default:
-                            if (typeof query === "string") {
-                                query = { query: query };  // Converts query text to query object.
-                            }
-                            initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
-                            break;
+                        resolve({ error: undefined, response: bodies, headers: responseHeaders });
                     }
+                };
+            
+                // Query operations will use ReadEndpoint even though it uses GET(for queryFeed) and POST(for regular query operations)
+                self._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
+                    var initialHeaders = Base.extend({}, documentclient.defaultHeaders);
+                    if (query === undefined) {
+                        var headers = Base.getHeaders(documentclient, initialHeaders, "get", path, id, type, options, partitionKeyRangeId);
+
+                        //TODO promisify
+                        documentclient.get(readEndpoint, path, headers, successCallback);
+                    } else {
+                        initialHeaders[Constants.HttpHeaders.IsQuery] = "true";
+                        switch (self.queryCompatibilityMode) {
+                            case AzureDocuments.QueryCompatibilityMode.SqlQuery:
+                                initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.SQL;
+                                break;
+                            case AzureDocuments.QueryCompatibilityMode.Query:
+                            case AzureDocuments.QueryCompatibilityMode.Default:
+                            default:
+                                if (typeof query === "string") {
+                                    query = { query: query };  // Converts query text to query object.
+                                }
+                                initialHeaders[Constants.HttpHeaders.ContentType] = Constants.MediaTypes.QueryJson;
+                                break;
+                        }
                     
-                    var headers = Base.getHeaders(documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
-                    documentclient.post(readEndpoint, path, query, headers, successCallback);
-                }
+                        var headers = Base.getHeaders(documentclient, initialHeaders, "post", path, id, type, options, partitionKeyRangeId);
+                        //TODO promisify
+                        documentclient.post(readEndpoint, path, query, headers, successCallback);
+                    }
+                });
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function queryFeedSuccess(queryFeedHash) {
+                        callback(queryFeedHash.error, queryFeedHash.response, queryFeedHash.headers);
+                    },
+                    function queryFeedFailure(queryFeedHash) {
+                        callback(queryFeedHash.error, queryFeedHash.response, queryFeedHash.headers);
+                    }
+                );
+            }
         },
         
         /** @ignore */

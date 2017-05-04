@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2014 Microsoft Corporation
 
@@ -103,8 +103,9 @@ var SmartRoutingMapProvider = Base.defineClass(
          * @ignore
          */
         getOverlappingRanges: function (callback, collectionLink, sortedRanges) {
+            var self = this;
             // validate if the list is non- overlapping and sorted
-            if (!this._isSortedAndNonOverlapping(sortedRanges)) {
+            if (!self._isSortedAndNonOverlapping(sortedRanges)) {
                 return callback(new Error("the list of ranges is not a non-overlapping sorted ranges"), undefined);
             }
 
@@ -114,8 +115,7 @@ var SmartRoutingMapProvider = Base.defineClass(
                 return callback(undefined, partitionKeyRanges);
             }
 
-            var that = this;
-            this._partitionKeyRangeCache._onCollectionRoutingMap(function (err, collectionRoutingMap) {
+            self._partitionKeyRangeCache._onCollectionRoutingMap(function (err, collectionRoutingMap) {
                 if (err) {
                     return callback(err, undefined);
                 }
@@ -134,7 +134,7 @@ var SmartRoutingMapProvider = Base.defineClass(
 
                     var queryRange;
                     if (partitionKeyRanges.length > 0) {
-                        queryRange = that._subtractRange(
+                        queryRange = self._subtractRange(
                             currentProvidedRange, partitionKeyRanges[partitionKeyRanges.length - 1]);
                     } else {
                         queryRange = currentProvidedRange;
@@ -147,7 +147,7 @@ var SmartRoutingMapProvider = Base.defineClass(
                     var lastKnownTargetRange = QueryRange.parsePartitionKeyRange(partitionKeyRanges[partitionKeyRanges.length - 1]);
                     assert.notEqual(lastKnownTargetRange, undefined);
                     // the overlapping ranges must contain the requested range
-                    assert(that._stringCompare(currentProvidedRange.max, lastKnownTargetRange.max) <= 0,
+                    assert(self._stringCompare(currentProvidedRange.max, lastKnownTargetRange.max) <= 0,
                         util.format("error: returned overlapping ranges %s does not contain the requested range %s", overlappingRanges, queryRange));
 
                     // the current range is contained in partitionKeyRanges just move forward
@@ -156,7 +156,7 @@ var SmartRoutingMapProvider = Base.defineClass(
                     }
                     currentProvidedRange = sortedRanges[index];
 
-                    while (that._stringCompare(currentProvidedRange.max, lastKnownTargetRange.max) <= 0) {
+                    while (self._stringCompare(currentProvidedRange.max, lastKnownTargetRange.max) <= 0) {
                         // the current range is covered too.just move forward
                         if (++index >= sortedRanges.length) {
                             return callback(undefined, partitionKeyRanges);

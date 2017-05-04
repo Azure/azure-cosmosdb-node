@@ -37,7 +37,25 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
     var collectionLink = 'dbs/7JZZAA==/colls/7JZZAOS-JQA=/';
     var collectionId = 'my collection';
     var MockedQueryIterator = Base.defineClass(function (results) { this._results = results; },
-        { toArray: function (callback) { callback(undefined, this._results); } });
+        {
+            toArray: function (callback) {
+                var promise = new Promise(function (resolve, reject) {
+                    resolve({ error: undefined, items: this._results });
+                });
+                if (!callback) {
+                    return promise;
+                } else {
+                    promise.then(
+                        function toArraySuccess(toArrayHash) {
+                            callback(toArrayHash.error, toArrayHash.items);
+                        },
+                        function toArrayFailure(toArrayHash) {
+                            callback(toArrayHash.error, toArrayHash.items);
+                        }
+                    );
+                }
+            }
+        });
 
     var MockedDocumentClient = Base.defineClass(function (partitionKeyRanges) { this._partitionKeyRanges = partitionKeyRanges; }, {
         readPartitionKeyRanges: function (collectionLink) {

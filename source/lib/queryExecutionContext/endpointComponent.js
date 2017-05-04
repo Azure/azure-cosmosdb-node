@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2014 Microsoft Corporation
 
@@ -46,15 +46,33 @@ var OrderByEndpointComponent = Base.defineClass(
          * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
          */
         nextItem: function (callback) {
-            this.executionContext.nextItem(function (err, item) {
-                if (err) {
-                    return callback(err, undefined);
-                }
-                if (item === undefined) {
-                    return callback(undefined, undefined);
-                }
-                callback(undefined, item["payload"]);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.executionContext.nextItem().then(
+                    function (response) {
+                        if (response.item === undefined) {
+                            resolve({ error: undefined, item: undefined });
+                        } else {
+                            resolve({ error: undefined, item: response.item["payload"] });
+                        }
+                    },
+                    function (rejection) {
+                        reject({ error: rejection.error, item: undefined });
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    }
+                );
+            }
         },
 
         /**
@@ -63,16 +81,34 @@ var OrderByEndpointComponent = Base.defineClass(
          * @instance
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
-        current: function(callback) {
-            this.executionContext.current(function (err, item) {
-                if (err) {
-                    return callback(err, undefined);
-                }
-                if (item === undefined) {
-                    return callback(undefined, undefined);
-                }
-                callback(undefined, item["payload"]);
+        current: function (callback) {
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.executionContext.current().then(
+                    function (response) {
+                        if (item === undefined) {
+                            resolve({ error: undefined, item: undefined });
+                        } else {
+                            resolve({ error: undefined, item: response.item["payload"] });
+                        }
+                    },
+                    function (rejection) {
+                        reject({ error: rejection.error, item: undefined });
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    },
+                    function currentFailure(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    }
+                );
+            }
         },
 
         /**
@@ -107,14 +143,29 @@ var TopEndpointComponent = Base.defineClass(
         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
         */
         nextItem: function (callback) {
-            if (this.topCount <= 0) {
-                return callback(undefined, undefined);
-            }
-            this.topCount--;
-            this.executionContext.nextItem(function (err, item) {
-                callback(err, item);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.topCount <= 0) {
+                    resolve({ error: undefined, item: undefined });
+                } else {
+                    self.topCount--;
+                    self.executionContext.nextItem()
+                        .then(resolve, reject);
+                }
             });
-        },
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    }
+                );
+            }
+       },
 
         /**
          * Retrieve the current element on the TopEndpointComponent.
@@ -123,12 +174,26 @@ var TopEndpointComponent = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function (callback) {
-            if (this.topCount <= 0) {
-                return callback(undefined, undefined);
-            }
-            this.executionContext.current(function (err, item) {
-                return callback(err, item);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.topCount <= 0) {
+                    resolve({ error: undefined, item: undefined });
+                } else {
+                    self.executionContext.current().then(resolve, reject);
+                }
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    },
+                    function currentFailure(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    }
+                );
+            }
         },
 
         /**
@@ -183,55 +248,82 @@ var AggregateEndpointComponent = Base.defineClass(
             this.toArrayTempResources = [];
             this.aggregateValues = [];
             this.aggregateValuesIndex = -1;
-            var that = this;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self._getQueryResults().then(
+                    function (response) {
+                        response.items.forEach(function (resource) {
+                            self.localAggregators.forEach(function (aggregator) {
+                                var itemValue = undefined;
+                                // Get the value of the first property if it exists
+                                if (resource && Object.keys(resource).length > 0) {
+                                    var key = Object.keys(resource)[0];
+                                    itemValue = resource[key];
+                                }
+                                aggregator.aggregate(itemValue);
+                            });
+                        });
 
-            this._getQueryResults(function (err, resources) {
-                if (err) {
-                    return callback(err, undefined);
-                }
+                        // Get the aggregated results
+                        self.localAggregators.forEach(function (aggregator) {
+                            self.aggregateValues.push(aggregator.getResult());
+                        });
 
-                resources.forEach(function (resource) {
-                    that.localAggregators.forEach(function (aggregator) {
-                        var itemValue = undefined;
-                        // Get the value of the first property if it exists
-                        if (resource && Object.keys(resource).length > 0) {
-                            var key = Object.keys(resource)[0];
-                            itemValue = resource[key];
-                        }
-                        aggregator.aggregate(itemValue);
-                    });
-                });
-
-                // Get the aggregated results
-                that.localAggregators.forEach(function (aggregator) {
-                    that.aggregateValues.push(aggregator.getResult());
-                });
-
-                return callback(undefined, that.aggregateValues);
+                        resolve({ error: undefined, items: self.aggregateValues });
+                    },
+                    function (rejection) {
+                        reject({ error: rejection.error, items: undefined });
+                    }
+                );
             });
-        },
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function _getAggregateResultSuccess(_getAggregateResultHash) {
+                        callback(_getAggregateResultHash.error, _getAggregateResultHash.items);
+                    },
+                    function _getAggregateResultFailure(_getAggregateResultHash) {
+                        callback(_getAggregateResultHash.error, _getAggregateResultHash.items);
+                    }
+                );
+            }
+       },
 
         /**
         * Get the results of queries from all partitions
         * @ignore 
         */
         _getQueryResults: function (callback) {
-            var that = this;
-
-            this.executionContext.nextItem(function (err, item) {
-                if (err) {
-                    return callback(err, undefined);
-                }
-                
-                if (item === undefined) {
-                    // no more results
-                    return callback(undefined, that.toArrayTempResources);
-                }
-
-                that.toArrayTempResources = that.toArrayTempResources.concat(item);
-                return that._getQueryResults(callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                this.executionContext.nextItem().then(
+                    function (response) {
+                        if (response.item === undefined) {
+                            // no more results
+                            resolve({ error: undefined, items: self.toArrayTempResources });
+                        } else {
+                            self.toArrayTempResources = self.toArrayTempResources.concat(response.item);
+                            self._getQueryResults().then(resolve, reject);
+                        }
+                    },
+                    function (rejection) {
+                        reject(rejection.error, undefined);
+                    }
+                );
             });
-
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function _getQueryResultsSuccess(_getQueryResultsHash) {
+                        callback(_getQueryResultsHash.error, _getQueryResultsHash.items);
+                    },
+                    function _getQueryResultsFailure(_getQueryResultsHash) {
+                        callback(_getQueryResultsHash.error, _getQueryResultsHash.items);
+                    }
+                );
+            }
         },
 
         /**
@@ -241,26 +333,45 @@ var AggregateEndpointComponent = Base.defineClass(
         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
         */
         nextItem: function (callback) {
-            var that = this;
-            var _nextItem = function (err, resources) {
-                if (err || that.aggregateValues.length <= 0) {
-                    return callback(undefined, undefined);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var _nextItem = function (err, resources) {
+                    if (err || self.aggregateValues.length <= 0) {
+                        reject({ error: undefined, item: undefined });
+                    } else {
+                        var resource = self.aggregateValuesIndex < self.aggregateValues.length
+                            ? self.aggregateValues[++self.aggregateValuesIndex]
+                            : undefined;
+
+                        resolve({ error: undefined, item: resource });
+                    }
+                };
+
+                if (self.aggregateValues == undefined) {
+                    self._getAggregateResult().then(
+                        function (response) {
+                            _nextItem(response.error, response.items);
+                        },
+                        function (rejection) {
+                            _nextItem(rejection.error, rejection.items);
+                        }
+                    );
                 }
-
-                var resource = that.aggregateValuesIndex < that.aggregateValues.length
-                    ? that.aggregateValues[++that.aggregateValuesIndex]
-                    : undefined;
-
-                return callback(undefined, resource);
-            };
-
-            if (that.aggregateValues == undefined) {
-                that._getAggregateResult(function (err, resources) {
-                    return _nextItem(err, resources);
-                });
-            }
-            else {
-                return _nextItem(undefined, that.aggregateValues);
+                else {
+                    _nextItem(undefined, self.aggregateValues);
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    }
+                );
             }
         },
 
@@ -271,14 +382,29 @@ var AggregateEndpointComponent = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function (callback) {
-            var that = this;
-            if (that.aggregateValues == undefined) {
-                that._getAggregateResult(function (err, resources) {
-                    return callback(undefined, that.aggregateValues[that.aggregateValuesIndex]);
-                });
-            }
-            else {
-                return callback(undefined, that.aggregateValues[that.aggregateValuesIndex]);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.aggregateValues == undefined) {
+                    self._getAggregateResult().then(
+                        function (response) {
+                            resolve({ error: undefined, item: self.aggregateValues[self.aggregateValuesIndex] });
+                        }
+                    );
+                } else {
+                    resolve({ error: undefined, item: self.aggregateValues[self.aggregateValuesIndex] });
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    },
+                    function currentFailure(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    }
+                );
             }
         },
 

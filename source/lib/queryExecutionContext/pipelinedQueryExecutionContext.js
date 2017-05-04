@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2014 Microsoft Corporation
 
@@ -77,44 +77,75 @@ var PipelinedQueryExecutionContext = Base.defineClass(
         },
 
         fetchMore: function (callback) {
-            this._fetchMoreTempBufferedResults = [];
-            this._fetchMoreLastResHeaders = undefined;
-            this._fetchMoreImplementation(callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self._fetchMoreTempBufferedResults = [];
+                self._fetchMoreLastResHeaders = undefined;
+                self._fetchMoreImplementation().then(resolve, reject);
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function fetchMoreSuccess(fetchMoreHash) {
+                        callback(fetchMoreHash.error, fetchMoreHash.items, fetchMoreHash.headers);
+                    },
+                    function fetchMoreFailure(fetchMoreHash) {
+                        callback(fetchMoreHash.error, fetchMoreHash.items, fetchMoreHash.headers);
+                    }
+                );
+            }
         },
 
         _fetchMoreImplementation: function (callback) {
-            var that = this;
-            var counter = 0;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var counter = 0;
 
-            this.endpoint.nextItem(function (err, resources, headers) {
-                if (err) {
-                    return callback(err, undefined, headers);
-                }
-                // concatinate the results and fetch more
-                that._fetchMoreLastResHeaders = headers;
-                if (resources === undefined) {
-                    // no more results
-                    if (that._fetchMoreTempBufferedResults.length === 0) {
-                        return callback(undefined, undefined, that._fetchMoreLastResHeaders);
+                self.endpoint.nextItem().then(
+                    function (response) {
+                        // concatinate the results and fetch more
+                        self._fetchMoreLastResHeaders = response.headers;
+                        if (response.items === undefined) {
+                            // no more results
+                            if (self._fetchMoreTempBufferedResults.length === 0) {
+                                resolve({ error: undefined, items: undefined, headers: self._fetchMoreLastResHeaders });
+                            } else {
+                                var temp = self._fetchMoreTempBufferedResults;
+                                self._fetchMoreTempBufferedResults = [];
+                                resolve({ error: undefined, items: temp, headers: self._fetchMoreLastResHeaders });
+                            }
+                        } else {
+                            self._fetchMoreTempBufferedResults = self._fetchMoreTempBufferedResults.concat(response.items);
+
+                            if (self.pageSize <= self._fetchMoreTempBufferedResults.length) {
+                                // fetched enough results
+                                var temp = self._fetchMoreTempBufferedResults;
+                                self._fetchMoreTempBufferedResults = [];
+
+                                resolve({ error: undefined, items: temp, headers: self._fetchMoreLastResHeaders });
+                            } else {
+                                self._fetchMoreImplementation().then(resolve, reject);
+                            }
+                        }
+                    },
+                    function (rejection) {
+                        reject({ error: rejection.error, items: undefined, headers: rejection.headers });
                     }
-
-                    var temp = that._fetchMoreTempBufferedResults;
-                    that._fetchMoreTempBufferedResults = [];
-                    return callback(undefined, temp, that._fetchMoreLastResHeaders);
-                }
-
-                that._fetchMoreTempBufferedResults = that._fetchMoreTempBufferedResults.concat(resources);
-
-                if (that.pageSize <= that._fetchMoreTempBufferedResults.length) {
-                    // fetched enough results
-                    var temp = that._fetchMoreTempBufferedResults;
-                    that._fetchMoreTempBufferedResults = [];
-
-                    return callback(undefined, temp, that._fetchMoreLastResHeaders);
-                }
-
-                that._fetchMoreImplementation(callback);
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function _fetchMoreImplementationSuccess(_fetchMoreImplementationHash) {
+                        callback(_fetchMoreImplementationHash.error, _fetchMoreImplementationHash.items, _fetchMoreImplementationHash.headers);
+                    },
+                    function _fetchMoreImplementationFailure(_fetchMoreImplementationHash) {
+                        callback(_fetchMoreImplementationHash.error, _fetchMoreImplementationHash.items, _fetchMoreImplementationHash.headers);
+                    }
+                );
+            }
         },
     },
     {

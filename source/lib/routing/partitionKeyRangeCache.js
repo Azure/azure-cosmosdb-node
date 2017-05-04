@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2014 Microsoft Corporation
 
@@ -51,43 +51,56 @@ var PartitionKeyRangeCache = Base.defineClass(
          * @ignore
          */
         _onCollectionRoutingMap: function (callback, collectionLink) {
-            var isNameBased = Base.isLinkNameBased(collectionLink);
-            var collectionId = this.documentclient.getIdFromLink(collectionLink, isNameBased);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                var isNameBased = Base.isLinkNameBased(collectionLink);
+                var collectionId = self.documentclient.getIdFromLink(collectionLink, isNameBased);
 
-            var collectionRoutingMap = this.collectionRoutingMapByCollectionId[collectionId];
-            if (collectionRoutingMap === undefined) {
-                // attempt to consturct collection routing map
-                var that = this;
-                var semaphorizedFuncCollectionMapInstantiator = function () {
-                    var collectionRoutingMap = that.collectionRoutingMapByCollectionId[collectionId];
-                    if (collectionRoutingMap === undefined) {
-                        var partitionKeyRangesIterator = that.documentclient.readPartitionKeyRanges(collectionLink);
-                        partitionKeyRangesIterator.toArray(function (err, resources) {
-                            if (err) {
-                                return callback(err, undefined);
-                            }
+                var collectionRoutingMap = self.collectionRoutingMapByCollectionId[collectionId];
+                if (collectionRoutingMap === undefined) {
+                    // attempt to consturct collection routing map
+                    var semaphorizedFuncCollectionMapInstantiator = function () {
+                        var collectionRoutingMap = self.collectionRoutingMapByCollectionId[collectionId];
+                        if (collectionRoutingMap === undefined) {
+                            var partitionKeyRangesIterator = self.documentclient.readPartitionKeyRanges(collectionLink);
+                            partitionKeyRangesIterator.toArray().then(
+                                function (response) {
+                                    collectionRoutingMap = CollectionRoutingMapFactory.createCompleteRoutingMap(
+                                        response.items.map(function (r) { return [r, true]; }),
+                                        collectionId);
 
-                            collectionRoutingMap = CollectionRoutingMapFactory.createCompleteRoutingMap(
-                                resources.map(function (r) { return [r, true]; }),
-                                collectionId);
+                                    self.collectionRoutingMapByCollectionId[collectionId] = collectionRoutingMap;
+                                    self.sem.leave();
+                                    resolve({ error: undefined, collectionRoutingMap: collectionRoutingMap });
+                                },
+                                function (rejection) {
+                                    reject({ error: rejection.error, collectionRoutingMap: undefined });
+                                }
+                            );
+                        } else {
+                            // sanity gaurd 
+                            self.sem.leave();
+                            resolve({ error: undefined, collectionRoutingMap: collectionRoutingMap.getOverlappingRanges(partitionKeyRanges) });
+                        }
+                    };
 
-                            that.collectionRoutingMapByCollectionId[collectionId] = collectionRoutingMap;
-                            that.sem.leave();
-                            return callback(undefined, collectionRoutingMap);
-                        });
-
-                    } else {
-                        // sanity gaurd 
-                        that.sem.leave();
-                        return callback(undefined, collectionRoutingMap.getOverlappingRanges(partitionKeyRanges));
-                    }
-                };
-
-                // We want only one attempt to construct collectionRoutingMap so we pass the consturction in the semaphore take
-                this.sem.take(semaphorizedFuncCollectionMapInstantiator);
-
+                    // We want only one attempt to construct collectionRoutingMap so we pass the consturction in the semaphore take
+                    self.sem.take(semaphorizedFuncCollectionMapInstantiator);
+                } else {
+                    resolve({ error: undefined, collectionRoutingMap: collectionRoutingMap });
+                }
+            });
+            if (!callback) {
+                return promise;
             } else {
-                callback(undefined, collectionRoutingMap);
+                promise.then(
+                    function _onCollectionRoutingMapSuccess(_onCollectionRoutingMapHash) {
+                        callback(_onCollectionRoutingMapHash.error, _onCollectionRoutingMapHash.collectionRoutingMap);
+                    },
+                    function _onCollectionRoutingMapFailure(_onCollectionRoutingMapHash) {
+                        callback(_onCollectionRoutingMapHash.error, _onCollectionRoutingMapHash.collectionRoutingMap);
+                    }
+                );
             }
         }, 
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2014 Microsoft Corporation
 
@@ -93,11 +93,31 @@ var DocumentProducer = Base.defineClass(
         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
         */
         nextItem: function (callback) {
-            var that = this;
-            this.internalExecutionContext.nextItem(function (err, item) {
-                that.bufferedCurrentItem = undefined;
-                callback(err, item);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                this.internalExecutionContext.nextItem().then(
+                    function (response) {
+                        self.bufferedCurrentItem = undefined;
+                        resolve(response);
+                    },
+                    function (response) {
+                        self.bufferedCurrentItem = undefined;
+                        reject(response);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item);
+                    }
+                );
+            }
         },
 
         /**
@@ -107,12 +127,33 @@ var DocumentProducer = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function (callback) {
-            var that = this;
-            this.internalExecutionContext.current(function (err, item) {
-                // sets the buffered current item for non async access
-                that.bufferedCurrentItem = item;
-                callback(err, item);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                this.internalExecutionContext.current().then(
+                    function (response) {
+                        // sets the buffered current item for non async access
+                        self.bufferedCurrentItem = response.item;
+                        resolve(response);
+                    },
+                    function (response) {
+                        // sets the buffered current item for non async access
+                        self.bufferedCurrentItem = response.item;
+                        reject(response);
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item);
+                    },
+                    function currentFailure(currenttHash) {
+                        callback(currentHash.error, currentHash.item);
+                    }
+                );
+            }
         },
     },
 
