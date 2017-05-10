@@ -151,7 +151,9 @@ var QueryIterator = Base.defineClass(
                 } 
 
                 that.toArrayTempResources = that.toArrayTempResources.concat(resource);
-                that._toArrayImplementation(callback);
+                setImmediate(function() {
+                    that._toArrayImplementation(callback);
+                });
             });
         },
 
@@ -174,7 +176,9 @@ var QueryIterator = Base.defineClass(
                 }
 
                 // recursively call itself to iterate to the remaining elements
-                that._forEachImplementation(callback);
+                setImmediate(function() {
+                    that._forEachImplementation(callback);
+                });
             });
         },
 
