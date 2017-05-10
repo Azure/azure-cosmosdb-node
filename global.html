@@ -326,7 +326,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line281">line 281</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line284">line 284</a>
     </li></ul></dd>
     
 
@@ -466,6 +466,25 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>ConsistentPrefix</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">ConsistentPrefix Consistency guarantees that reads will return some prefix of all writes with no gaps.
+                                      All writes will be eventually be available for reads.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -501,7 +520,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line136">line 136</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line138">line 138</a>
     </li></ul></dd>
     
 
@@ -988,7 +1007,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line154">line 154</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line157">line 157</a>
     </li></ul></dd>
     
 
@@ -1143,7 +1162,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line170">line 170</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line173">line 173</a>
     </li></ul></dd>
     
 
@@ -1282,7 +1301,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line207">line 207</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line210">line 210</a>
     </li></ul></dd>
     
 
@@ -1437,7 +1456,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line220">line 220</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line223">line 223</a>
     </li></ul></dd>
     
 
@@ -1814,7 +1833,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line250">line 250</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line253">line 253</a>
     </li></ul></dd>
     
 
@@ -1951,7 +1970,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line234">line 234</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line237">line 237</a>
     </li></ul></dd>
     
 
@@ -2070,7 +2089,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line265">line 265</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -2089,6 +2108,2113 @@
         
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="createAttachmentUri"><span class="type-signature"></span>createAttachmentUri<span class="signature">(databaseId, collectionId, documentId, attachmentId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">Given a database, collection and conflict id, this creates a conflict link.</p>
+    
+
+
+
+<div class="description">
+    Would be used when creating a Conflict in Azure DocumentDB database service.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>documentId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The document Id\</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attachmentId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The attachment Id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line199">line 199</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A conflict link in the format of dbs/{0}/colls/{1}/conflicts/{2} with {0} being a Uri escaped version of the databaseId, {1} being collectionId and {2} being the conflictId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createConflictUri"><span class="type-signature"></span>createConflictUri<span class="signature">(databaseId, collectionId, conflictId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">Given a database, collection and conflict id, this creates a conflict link.</p>
+    
+
+
+
+<div class="description">
+    Would be used when creating a Conflict in Azure DocumentDB database service.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>conflictId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The conflict Id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line181">line 181</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A conflict link in the format of dbs/{0}/colls/{1}/conflicts/{2} with {0} being a Uri escaped version of the databaseId, {1} being collectionId and {2} being the conflictId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createDatabaseUri"><span class="type-signature"></span>createDatabaseUri<span class="signature">(databaseId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Would be used when creating or deleting a DocumentCollection or a User in Azure DocumentDB database service
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A database link in the format of dbs/{0} with {0} being a Uri escaped version of the databaseId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createDocumentCollectionUri"><span class="type-signature"></span>createDocumentCollectionUri<span class="signature">(databaseId, collectionId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Would be used when updating or deleting a DocumentCollection, creating a Document, a StoredProcedure, a Trigger, a UserDefinedFunction, or when executing a query with CreateDocumentQuery in Azure DocumentDB database service.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A collection link in the format of dbs/{0}/colls/{1} with {0} being a Uri escaped version of the databaseId and {1} being collectionId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createDocumentUri"><span class="type-signature"></span>createDocumentUri<span class="signature">(databaseId, collectionId, documentId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Would be used when creating an Attachment, or when replacing or deleting a Document in Azure DocumentDB database service
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>documentId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The document id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line96">line 96</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A document link in the format of dbs/{0}/colls/{1}/docs/{2} with {0} being a Uri escaped version of the databaseId, {1} being collectionId and {2} being the documentId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createPartitionKeyRangesUri"><span class="type-signature"></span>createPartitionKeyRangesUri<span class="signature">(databaseId, collectionId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">Given a database and collection, this creates a partition key ranges link in the Azure DocumentDB database service.</p>
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection Id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line214">line 214</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A partition key ranges link in the format of dbs/{0}/colls/{1}/pkranges with {0} being a Uri escaped version of the databaseId and {1} being collectionId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createPermissionUri"><span class="type-signature"></span>createPermissionUri<span class="signature">(databaseId, userId, permissionId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Would be used when replacing or deleting a Permission in Azure DocumentDB database service.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>permissionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The permissionId</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line113">line 113</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A permission link in the format of dbs/{0}/users/{1}/permissions/{2} with {0} being a Uri escaped version of the databaseId, {1} being userId and {2} being permissionId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createStoredProcedureUri"><span class="type-signature"></span>createStoredProcedureUri<span class="signature">(databaseId, collectionId, storedProcedureId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Would be used when replacing, executing, or deleting a StoredProcedure in Azure DocumentDB database service.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>storedProcedureId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The stored procedure Id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line130">line 130</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A stored procedure link in the format of dbs/{0}/colls/{1}/sprocs/{2} with {0} being a Uri escaped version of the databaseId, {1} being collectionId and {2} being the storedProcedureId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createTriggerUri"><span class="type-signature"></span>createTriggerUri<span class="signature">(databaseId, collectionId, triggerId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">Given a database, collection and trigger id, this creates a trigger link.</p>
+    
+
+
+
+<div class="description">
+    Would be used when replacing, executing, or deleting a Trigger in Azure DocumentDB database service
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>triggerId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The trigger Id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line147">line 147</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A trigger link in the format of dbs/{0}/colls/{1}/triggers/{2} with {0} being a Uri escaped version of the databaseId, {1} being collectionId and {2} being the triggerId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createUserDefinedFunctionUri"><span class="type-signature"></span>createUserDefinedFunctionUri<span class="signature">(databaseId, collectionId, udfId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">Given a database, collection and udf id, this creates a udf link.</p>
+    
+
+
+
+<div class="description">
+    Would be used when replacing, executing, or deleting a UserDefinedFunction in Azure DocumentDB database service
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collectionId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The collection Id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>udfId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The User Defined Function Id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line164">line 164</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    -A udf link in the format of dbs/{0}/colls/{1}/udfs/{2} with {0} being a Uri escaped version of the databaseId, {1} being collectionId and {2} being the udfId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createUserUri"><span class="type-signature"></span>createUserUri<span class="signature">(databaseId, userId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Would be used when creating a Permission, or when replacing or deleting a User in Azure DocumentDB database service
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>databaseId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The database id</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user id</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="uriFactory.js.html">uriFactory.js</a>, <a href="uriFactory.js.html#line79">line 79</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A user link in the format of dbs/{0}/users/{1} with {0} being a Uri escaped version of the databaseId and {1} being userId
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
     
 
     
@@ -2202,7 +4328,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2566">line 2566</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2569">line 2569</a>
     </li></ul></dd>
     
 
@@ -2394,6 +4520,37 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>disableRUPerMinuteUsage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -2429,7 +4586,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2493">line 2493</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2496">line 2496</a>
     </li></ul></dd>
     
 
@@ -2576,7 +4733,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2547">line 2547</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2550">line 2550</a>
     </li></ul></dd>
     
 
@@ -2746,7 +4903,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2556">line 2556</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2559">line 2559</a>
     </li></ul></dd>
     
 
@@ -2941,7 +5098,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2535">line 2535</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2538">line 2538</a>
     </li></ul></dd>
     
 
@@ -3118,7 +5275,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2503">line 2503</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2506">line 2506</a>
     </li></ul></dd>
     
 
@@ -3357,7 +5514,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2525">line 2525</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2528">line 2528</a>
     </li></ul></dd>
     
 
@@ -3754,6 +5911,68 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>offerEnableRUPerMinuteThroughput</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection in the Azure DocumentDB database service.                                                                     <p>This option is only valid when creating a document collection.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>disableRUPerMinuteUsage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -3936,7 +6155,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2511">line 2511</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2514">line 2514</a>
     </li></ul></dd>
     
 
@@ -4083,7 +6302,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2518">line 2518</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2521">line 2521</a>
     </li></ul></dd>
     
 
@@ -4113,13 +6332,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DocumentClient.html">DocumentClient</a></li><li><a href="HashPartitionResolver.html">HashPartitionResolver</a></li><li><a href="QueryIterator.html">QueryIterator</a></li><li><a href="Range.html">Range</a></li><li><a href="RangePartitionResolver.html">RangePartitionResolver</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ConnectionPolicy">ConnectionPolicy</a></li><li><a href="global.html#ConsistencyLevel">ConsistencyLevel</a></li><li><a href="global.html#createAttachmentUri">createAttachmentUri</a></li><li><a href="global.html#createConflictUri">createConflictUri</a></li><li><a href="global.html#createDatabaseUri">createDatabaseUri</a></li><li><a href="global.html#createDocumentCollectionUri">createDocumentCollectionUri</a></li><li><a href="global.html#createDocumentUri">createDocumentUri</a></li><li><a href="global.html#createPartitionKeyRangesUri">createPartitionKeyRangesUri</a></li><li><a href="global.html#createPermissionUri">createPermissionUri</a></li><li><a href="global.html#createStoredProcedureUri">createStoredProcedureUri</a></li><li><a href="global.html#createTriggerUri">createTriggerUri</a></li><li><a href="global.html#createUserDefinedFunctionUri">createUserDefinedFunctionUri</a></li><li><a href="global.html#createUserUri">createUserUri</a></li><li><a href="global.html#DatabaseAccount">DatabaseAccount</a></li><li><a href="global.html#IndexingMode">IndexingMode</a></li><li><a href="global.html#IndexKind">IndexKind</a></li><li><a href="global.html#MediaReadMode">MediaReadMode</a></li><li><a href="global.html#PermissionMode">PermissionMode</a></li><li><a href="global.html#RetryOptions">RetryOptions</a></li><li><a href="global.html#TriggerOperation">TriggerOperation</a></li><li><a href="global.html#TriggerType">TriggerType</a></li><li><a href="global.html#UserDefinedFunctionType">UserDefinedFunctionType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Sat Mar 25 2017 06:57:54 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Tue May 09 2017 22:25:38 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
