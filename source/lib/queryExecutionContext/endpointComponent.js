@@ -247,7 +247,7 @@ var AggregateEndpointComponent = Base.defineClass(
             var promise = new Promise(function (resolve, reject) {
                 self._getQueryResults().then(
                     function (response) {
-                        response.items.forEach(function (resource) {
+                        response.list.forEach(function (resource) {
                             self.localAggregators.forEach(function (aggregator) {
                                 var itemValue = undefined;
                                 // Get the value of the first property if it exists
@@ -264,10 +264,10 @@ var AggregateEndpointComponent = Base.defineClass(
                             self.aggregateValues.push(aggregator.getResult());
                         });
 
-                        resolve({ error: undefined, items: self.aggregateValues });
+                        resolve({ error: undefined, list: self.aggregateValues });
                     },
                     function (rejection) {
-                        reject({ error: rejection.error, items: undefined });
+                        reject({ error: rejection.error, list: undefined });
                     }
                 );
             });
@@ -276,10 +276,10 @@ var AggregateEndpointComponent = Base.defineClass(
             } else {
                 promise.then(
                     function _getAggregateResultSuccess(_getAggregateResultHash) {
-                        callback(_getAggregateResultHash.error, _getAggregateResultHash.items);
+                        callback(_getAggregateResultHash.error, _getAggregateResultHash.list);
                     },
                     function _getAggregateResultFailure(_getAggregateResultHash) {
-                        callback(_getAggregateResultHash.error, _getAggregateResultHash.items);
+                        callback(_getAggregateResultHash.error, _getAggregateResultHash.list);
                     }
                 );
             }
@@ -296,7 +296,7 @@ var AggregateEndpointComponent = Base.defineClass(
                     function (response) {
                         if (response.item === undefined) {
                             // no more results
-                            resolve({ error: undefined, items: self.toArrayTempResources });
+                            resolve({ error: undefined, list: self.toArrayTempResources });
                         } else {
                             self.toArrayTempResources = self.toArrayTempResources.concat(response.item);
                             self._getQueryResults().then(resolve, reject);
@@ -312,10 +312,10 @@ var AggregateEndpointComponent = Base.defineClass(
             } else {
                 promise.then(
                     function _getQueryResultsSuccess(_getQueryResultsHash) {
-                        callback(_getQueryResultsHash.error, _getQueryResultsHash.items);
+                        callback(_getQueryResultsHash.error, _getQueryResultsHash.list);
                     },
                     function _getQueryResultsFailure(_getQueryResultsHash) {
-                        callback(_getQueryResultsHash.error, _getQueryResultsHash.items);
+                        callback(_getQueryResultsHash.error, _getQueryResultsHash.list);
                     }
                 );
             }
@@ -345,10 +345,10 @@ var AggregateEndpointComponent = Base.defineClass(
                 if (self.aggregateValues == undefined) {
                     self._getAggregateResult().then(
                         function (response) {
-                            _nextItem(response.error, response.items);
+                            _nextItem(response.error, response.list);
                         },
                         function (rejection) {
-                            _nextItem(rejection.error, rejection.items);
+                            _nextItem(rejection.error, rejection.list);
                         }
                     );
                 }
