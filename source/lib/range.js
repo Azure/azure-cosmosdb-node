@@ -128,12 +128,12 @@ var Range = Base.defineClass(
                             self._toArrayImplementation().then(resolve, reject);
                         },
                         function (rejection) {
-                            reject({ error: rejection.error, items: undefined, headers: rejection.headers });
+                            reject({ error: rejection.error, list: undefined, headers: rejection.headers });
                         }
                     );
                 } else {
                     self._state = self._states.ended;
-                    resolve({ error: undefined, items: self.resources, headers: self.resHeaders });
+                    resolve({ error: undefined, list: self.resources, headers: self.resHeaders });
                 }
             });
             if (!callback) {
@@ -141,10 +141,10 @@ var Range = Base.defineClass(
             } else {
                 promise.then(
                     function _toArrayImplementationSuccess(_toArrayImplementationHash) {
-                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.items, _toArrayImplementationHash.headers);
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
                     },
                     function _toArrayImplementationFailure(_toArrayImplementationHash) {
-                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.items, _toArrayImplementationHash.headers);
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
                     }
                 );
             }
