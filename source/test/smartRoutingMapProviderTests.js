@@ -40,17 +40,17 @@ describe("Smart Routing Map Provider OverlappingRanges", function () {
         {
             toArray: function (callback) {
                 var promise = new Promise(function (resolve, reject) {
-                    resolve({ error: undefined, items: this._results });
+                    resolve({ error: undefined, list: this._results });
                 });
                 if (!callback) {
                     return promise;
                 } else {
                     promise.then(
                         function toArraySuccess(toArrayHash) {
-                            callback(toArrayHash.error, toArrayHash.items);
+                            callback(toArrayHash.error, toArrayHash.list);
                         },
                         function toArrayFailure(toArrayHash) {
-                            callback(toArrayHash.error, toArrayHash.items);
+                            callback(toArrayHash.error, toArrayHash.list);
                         }
                     );
                 }
