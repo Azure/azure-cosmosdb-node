@@ -1,6 +1,6 @@
 ﻿/*
 The MIT License (MIT)
-Copyright (c) 2014 Microsoft Corporation
+Copyright (c) 2017 Microsoft Corporation
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,19 +46,16 @@ var OrderByEndpointComponent = Base.defineClass(
          * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
          */
         nextItem: function (callback) {
-            var self = this;
             var promise = new Promise(function (resolve, reject) {
                 self.executionContext.nextItem().then(
                     function (response) {
                         if (response.item === undefined) {
-                            resolve({ error: undefined, item: undefined });
+                            resolve(response);
                         } else {
-                            resolve({ error: undefined, item: response.item["payload"] });
+                            resolve({error:undefined, item:response.item["payload"], response.headers});
                         }
                     },
-                    function (rejection) {
-                        reject({ error: rejection.error, item: undefined });
-                    }
+                    reject
                 );
             });
             if (!callback) {
@@ -66,10 +63,10 @@ var OrderByEndpointComponent = Base.defineClass(
             } else {
                 promise.then(
                     function nextItemSuccess(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item: nextItemHash.headers);
                     },
                     function nextItemFailure(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item: nextItemHash.headers);
                     }
                 );
             }
@@ -81,20 +78,18 @@ var OrderByEndpointComponent = Base.defineClass(
          * @instance
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
-        current: function (callback) {
+        current: function(callback) {
             var self = this;
             var promise = new Promise(function (resolve, reject) {
                 self.executionContext.current().then(
                     function (response) {
-                        if (item === undefined) {
-                            resolve({ error: undefined, item: undefined });
+                        if (response.item === undefined) {
+                            resolve(response);
                         } else {
-                            resolve({ error: undefined, item: response.item["payload"] });
+                            resolve({ error: undefined, item: response.item["payload"], headers: response.headers });
                         }
                     },
-                    function (rejection) {
-                        reject({ error: rejection.error, item: undefined });
-                    }
+                    reject
                 );
             });
             if (!callback) {
@@ -102,10 +97,10 @@ var OrderByEndpointComponent = Base.defineClass(
             } else {
                 promise.then(
                     function currentSuccess(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     },
                     function currentFailure(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     }
                 );
             }
@@ -146,7 +141,7 @@ var TopEndpointComponent = Base.defineClass(
             var self = this;
             var promise = new Promise(function (resolve, reject) {
                 if (self.topCount <= 0) {
-                    resolve({ error: undefined, item: undefined });
+                    resolve({ error: undefined, item: undefined, headers: undefined });
                 } else {
                     self.topCount--;
                     self.executionContext.nextItem()
@@ -158,10 +153,10 @@ var TopEndpointComponent = Base.defineClass(
             } else {
                 promise.then(
                     function nextItemSuccess(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     },
                     function nextItemFailure(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     }
                 );
             }
@@ -177,7 +172,7 @@ var TopEndpointComponent = Base.defineClass(
             var self = this;
             var promise = new Promise(function (resolve, reject) {
                 if (self.topCount <= 0) {
-                    resolve({ error: undefined, item: undefined });
+                    resolve({ error: undefined, item: undefined, headers: undefined });
                 } else {
                     self.executionContext.current().then(resolve, reject);
                 }
@@ -187,10 +182,10 @@ var TopEndpointComponent = Base.defineClass(
             } else {
                 promise.then(
                     function currentSuccess(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     },
                     function currentFailure(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     }
                 );
             }

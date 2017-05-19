@@ -1,6 +1,6 @@
 ﻿/*
 The MIT License (MIT)
-Copyright (c) 2014 Microsoft Corporation
+Copyright (c) 2017 Microsoft Corporation
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,21 @@ SOFTWARE.
 "use strict";
 
 var Base = require("../base")
+    , Constants = require("../constants")
     , DefaultQueryExecutionContext = require("./defaultQueryExecutionContext")
     , PriorityQueue = require("priorityqueuejs")
     , SmartRoutingMapProvider = require("../routing/smartRoutingMapProvider")
     , CollectionRoutingMap = require("../routing/inMemoryCollectionRoutingMap")
     , DocumentProducer = require("./documentProducer")
     , QueryExecutionInfoParser = require("./partitionedQueryExecutionContextInfoParser")
+    , bs = require("binary-search-bounds")
+    , HeaderUtils = require("./headerUtils")
     , assert = require('assert');
 
 var QueryRange = CollectionRoutingMap.QueryRange;
-
 var FormatPlaceHolder = "{documentdb-formattableorderbyquery-filter}"; 
+
+var PartitionKeyRangeConstants = CollectionRoutingMap._PartitionKeyRange;
 
 //SCRIPT START
 var ParallelQueryExecutionContext = Base.defineClass(
@@ -69,11 +73,22 @@ var ParallelQueryExecutionContext = Base.defineClass(
             this.documentProducerComparator = DocumentProducer.createTargetPartitionKeyRangeComparator();
         }
 
+        this.pageSize = options["maxItemCount"];
+        if (this.pageSize === undefined) {
+            this.pageSize = ParallelQueryExecutionContext.DEFAULT_PAGE_SIZE;
+            this.options["maxItemCount"] = this.pageSize;
+        }
+
         // this is a max priority queue
         this.orderByPQ = new PriorityQueue(function (a, b) { return that.documentProducerComparator(b, a); });
 
         this.state = ParallelQueryExecutionContext.STATES.started;
         this.sem = require('semaphore')(1);
+
+        this.requestContinuation = options ? options.continuation : null;
+
+        // response headers of undergoing operation
+        this._respHeaders = HeaderUtils.getInitialHeader();
         var that = this;
         var createDocumentProducersAndFillUpPriorityQueueFunc = function () {
             // ensure the lock is released after finishing up
@@ -81,7 +96,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
                 that.waitingForInternalExcecutionContexts = targetPartitionRanges.length;
                 if (err) {
                     that.err = err;
-                     // relase the lock
+                    // relase the lock
                     that.sem.leave();
                     return;
                 }
@@ -93,10 +108,37 @@ var ParallelQueryExecutionContext = Base.defineClass(
                     maxDegreeOfParallelism = targetPartitionRanges.length;
                 }
                 var parallelismSem = require('semaphore')(Math.max(maxDegreeOfParallelism, 1));
-                
+
                 var targetPartitionQueryExecutionContextList = [];
 
-                targetPartitionRanges.forEach(
+                var filteredPartitionKeyRanges = [];
+
+                if (that.requestContinuation) {
+                    try {
+                        var suppliedCompositeContinuationToken = JSON.parse(that.requestContinuation);
+                        filteredPartitionKeyRanges = that.getPartitionKeyRangesForContinuation(
+                            suppliedCompositeContinuationToken, targetPartitionRanges);
+
+                        if (filteredPartitionKeyRanges.length > 0) {
+                            targetPartitionQueryExecutionContextList.push(
+                                that._createTargetPartitionQueryExecutionContext(
+                                    filteredPartitionKeyRanges[0], suppliedCompositeContinuationToken.token));
+                        }
+
+                        filteredPartitionKeyRanges = filteredPartitionKeyRanges.slice(1);
+
+                    } catch (e) {
+                        that.err = e;
+                        that.sem.leave();
+                        return;
+                    }
+
+                } else {
+                    filteredPartitionKeyRanges = targetPartitionRanges;
+                }
+
+            
+                filteredPartitionKeyRanges.forEach(
                     function (partitionTargetRange) {
                         // no async callback
                         targetPartitionQueryExecutionContextList.push(
@@ -109,8 +151,9 @@ var ParallelQueryExecutionContext = Base.defineClass(
 
                         // has async callback
                         var throttledFunc = function () {
-                            targetQueryExContext.current(function (err, document) {
+                            targetQueryExContext.current(function (err, document, headers) {
                                 try {
+                                    that._mergeWithActiveResponseHeaders(headers);
                                     if (err) {
                                         that.err = err;
                                         return;
@@ -139,6 +182,31 @@ var ParallelQueryExecutionContext = Base.defineClass(
         this.sem.take(createDocumentProducersAndFillUpPriorityQueueFunc);
     },
     {
+        getPartitionKeyRangesForContinuation: function (suppliedCompositeContinuationToken,
+            partitionKeyRanges) {
+
+            var startRange = {};
+            startRange[PartitionKeyRangeConstants.MinInclusive] = suppliedCompositeContinuationToken.range.min;
+            startRange[PartitionKeyRangeConstants.MaxExclusive] = suppliedCompositeContinuationToken.range.max;
+
+            var vbCompareFunction = function (x, y) {
+                if (x[PartitionKeyRangeConstants.MinInclusive] > y[PartitionKeyRangeConstants.MinInclusive]) return 1;
+                if (x[PartitionKeyRangeConstants.MinInclusive] < y[PartitionKeyRangeConstants.MinInclusive]) return -1;
+
+                return 0;
+            }
+
+            var minIndex = bs.le(partitionKeyRanges, startRange, vbCompareFunction);
+            // that's an error
+
+            if (minIndex > 0) {
+                throw new Error("BadRequestException: InvalidContinuationToken");
+            }
+
+            // return slice of the partition key ranges
+            return partitionKeyRanges.slice(minIndex, partitionKeyRanges.length - minIndex);
+        },
+
         _decrementInitiationLock: function () {
             // decrements waitingForInternalExcecutionContexts
             // if waitingForInternalExcecutionContexts reaches 0 releases the semaphore and changes the state
@@ -150,6 +218,17 @@ var ParallelQueryExecutionContext = Base.defineClass(
                 }
             }
         },
+
+        _mergeWithActiveResponseHeaders: function (headers) {
+            HeaderUtils.mergeHeaders(this._respHeaders, headers);
+        },
+
+        _getAndResetActiveResponseHeaders: function () {
+            var ret = this._respHeaders;
+            this._respHeaders = HeaderUtils.getInitialHeader();
+            return ret;
+        },
+
         /**
         * Execute a provided function on the next element in the ParallelQueryExecutionContext.
         * @memberof ParallelQueryExecutionContext
@@ -161,7 +240,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
             var promise = new Promise(function (resolve, reject) {
                 if (self.err) {
                     // if there is a prior error return error
-                    reject({ error: self.err, item: undefined });
+                    reject({error:self.err, item:undefined, headers:undefined});
                 } else {
                     self.sem.take(function () {
                         // NOTE: lock must be released before invoking quitting
@@ -169,13 +248,13 @@ var ParallelQueryExecutionContext = Base.defineClass(
                             // release the lock before invoking callback
                             self.sem.leave();
                             // if there is a prior error return error
-                            reject({ error: self.err, item: undefined });
+                            reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
                         } else if (self.orderByPQ.size() === 0) {
                             // there is no more results
                             self.state = ParallelQueryExecutionContext.STATES.ended;
                             // release the lock before invoking callback
                             self.sem.leave();
-                            resolve({ error: undefined, item: undefined });
+                            resolve({error:undefined, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
                         } else {
                             try {
                                 var targetPartitionRangeDocumentProducer = self.orderByPQ.deq();
@@ -185,14 +264,15 @@ var ParallelQueryExecutionContext = Base.defineClass(
                                 self.err = e;
                                 // release the lock before invoking callback
                                 self.sem.leave();
-                                reject({ error: self.err, item: undefined });
+                                reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
                                 return;
                             }
 
                             targetPartitionRangeDocumentProducer.nextItem().then(
-                                function nextItemSuccess(response) {
+                                function (repsonse) {
+                                    self._mergeWithActiveResponseHeaders(response.headers);
                                     if (response.item === undefined) {
-                                        // self should never happen
+                                        // this should never happen
                                         // because the documentProducer already has buffered an item
                                         // assert item !== undefined
                                         self.err =
@@ -201,17 +281,18 @@ var ParallelQueryExecutionContext = Base.defineClass(
                                                     "Extracted DocumentProducer from the priority queue doesn't have any buffered item!"));
                                         // release the lock before invoking callback
                                         self.sem.leave();
-                                        reject({ error: self.err, item: undefined });
+                                        reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
                                     } else {
                                         // we need to put back the document producer to the queue if it has more elements.
                                         // the lock will be released after we know document producer must be put back in the queue or not
                                         targetPartitionRangeDocumentProducer.current().then(
-                                            function currentSuccess(response) {
+                                            function (afterResponse) {
                                                 try {
-                                                    // more results is left in self document producer
-                                                    if (response.item !== undefined) {
+                                                    self._mergeWithActiveResponseHeaders(afterResponse.headers);
+                                                    if (afterResponse.item !== undefined) {
+                                                        // there are more results left in this document producer
                                                         try {
-                                                            var headItem = targetPartitionRangeDocumentProducer.peek();
+                                                            var headItem = targetPartitionRangeDocumentProducer.peekBufferedItems()[0];
                                                             assert.notStrictEqual(headItem, undefined,
                                                                 'Extracted DocumentProducer from PQ is invalid state with no result!');
                                                             self.orderByPQ.enq(targetPartitionRangeDocumentProducer);
@@ -226,16 +307,23 @@ var ParallelQueryExecutionContext = Base.defineClass(
                                                     self.sem.leave();
                                                 }
                                             },
-                                            function currentFailure(rejection) {
-                                                self.err = err;
+                                            function (afterRejection) {
+                                                try {
+                                                    self._mergeWithActiveResponseHeaders(afterRejection.headers);
+                                                    self.err = afterRejection.error;
+                                                } finally {
+                                                    // release the lock before returning
+                                                    self.sem.leave();
+                                                }
                                             }
                                         );
 
                                         // invoke the callback on the item
-                                        resolve({ error: undefined, item: response.item });
+                                        resolve({error:undefined, item:response.item, headers:self._getAndResetActiveResponseHeaders()});
                                     }
                                 },
-                                function nextItemFailure(rejection) {
+                                function (rejection) {
+                                    self._mergeWithActiveResponseHeaders(rejection.headers);
                                     // this should never happen
                                     // because the documentProducer already has buffered an item
                                     // assert err === undefined
@@ -246,7 +334,7 @@ var ParallelQueryExecutionContext = Base.defineClass(
                                                 JSON.stringify(rejection.error)));
                                     // release the lock before invoking callback
                                     self.sem.leave();
-                                    reject({ error: self.err, item: undefined });
+                                    reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
                                 }
                             );
                         }
@@ -258,10 +346,10 @@ var ParallelQueryExecutionContext = Base.defineClass(
             } else {
                 promise.then(
                     function nextItemSuccess(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     },
                     function nextItemFailure(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     }
                 );
             }
@@ -282,9 +370,9 @@ var ParallelQueryExecutionContext = Base.defineClass(
                     self.sem.take(function () {
                         try {
                             if (self.err) {
-                                reject({ error: self.err, item: undefined });
+                                reject({ error: self.err, item: undefined, headers: self._getAndResetActiveResponseHeaders() });
                             } else if (self.orderByPQ.size() === 0) {
-                                resolve({ error: undefined, item: undefined });
+                                resolve({ error: undefined, item: undefined, headers: self._getAndResetActiveResponseHeaders() });
                             } else {
                                 var targetPartitionRangeDocumentProducer = self.orderByPQ.peek();
                                 targetPartitionRangeDocumentProducer.current().then(resolve, reject);
@@ -300,10 +388,10 @@ var ParallelQueryExecutionContext = Base.defineClass(
             } else {
                 promise.then(
                     function currentSuccess(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     },
                     function currentFailure(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     }
                 );
             }
@@ -318,8 +406,191 @@ var ParallelQueryExecutionContext = Base.defineClass(
         hasMoreResults: function () {
             return !(this.state === ParallelQueryExecutionContext.STATES.ended || this.err !== undefined);
         },
-        
-        _createTargetPartitionQueryExecutionContext: function (partitionKeyTargetRange) {
+
+        fetchMore: function (callback) {
+
+            if (this.err) {
+                return callback(this.err, undefined, that._getAndResetActiveResponseHeaders());
+            }
+
+            var that = this;
+            this.sem.take(function () {
+                try {
+                    if (that.err) {
+                        return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
+                    }
+
+                    if (Array.isArray(that.sortOrders) && that.sortOrders.length > 0) {
+
+                        that._fetchMoreTempBufferedResults = [];
+                        that._fetchMoreImplementation(callback);
+
+                    } else {
+
+                        that._fetchMoreTempBufferedResults = [];
+                        that._fetchMoreBasicParallel(callback);
+                    }
+                } finally {
+                   that.sem.leave();
+                }
+            });
+        },
+
+        _fetchMoreBasicParallel: function (callback) {
+
+            if (this.orderByPQ.size() === 0) {
+                if (this._fetchMoreTempBufferedResults.length > 0) {
+
+                    return callback(undefined, this._fetchMoreTempBufferedResults, this._getAndResetActiveResponseHeaders());
+                } else {
+                    this.state = ParallelQueryExecutionContext.STATES.ended;
+                    return callback(undefined, undefined, undefined);
+                }
+            }
+
+            var targetPartitionRangeDocumentProducer = this.orderByPQ.deq();
+            var continuation = targetPartitionRangeDocumentProducer.internalExecutionContext.continuation;
+
+            var that = this;
+
+            this._recursiveDrain(this.options["maxItemCount"] - this._fetchMoreTempBufferedResults.length,
+                                targetPartitionRangeDocumentProducer, function (err, res) {
+                if (err) {
+                    return callback(err, undefined, that._getAndResetActiveResponseHeaders());
+                }
+
+                that._fetchMoreTempBufferedResults = that._fetchMoreTempBufferedResults.concat(res);
+
+                if (!targetPartitionRangeDocumentProducer.allFetched) {
+                    // assert res.length + targetPartitionRangeDocumentProducer.peekBufferedItems().length > that.options["maxItemCount"]
+
+                    // put doc producer back in the queue
+                    that.orderByPQ.enq(targetPartitionRangeDocumentProducer);
+
+                    that._respHeaders[Constants.HttpHeaders.Continuation] =
+                        JSON.stringify(that._buildContinuationTokenFrom(targetPartitionRangeDocumentProducer));
+
+                    // assert that._fetchMoreTempBufferedResults.lenght <= that.options["maxItemCount"]
+
+                    return callback(undefined, that._fetchMoreTempBufferedResults, that._getAndResetActiveResponseHeaders());
+                } else {
+
+                    // assert targetPartitionRangeDocumentProducer.peekBufferedItems().length === 0
+                    that._fetchMoreBasicParallel(callback);
+                }
+            });
+        },
+
+        _buildContinuationTokenFrom: function (documentProducer) {
+            // given the document producer constructs the continu
+            if (documentProducer.allFetched && documentProducer.peekBufferedItems().length == 0) {
+                return undefined;
+            }
+
+
+            var min = documentProducer.targetPartitionKeyRange[PartitionKeyRangeConstants.MinInclusive];
+            var max = documentProducer.targetPartitionKeyRange[PartitionKeyRangeConstants.MaxExclusive];
+            var range = {
+                'min': min,
+                'max': max,
+                'id': documentProducer.targetPartitionKeyRange.id
+            };
+
+            var withNullDefault = function (token) {
+                if (token) {
+                    return token;
+                } else if (token === null || token === undefined) {
+                    return null;
+                }
+            }
+
+            var documentProducerContinuationToken = undefined;
+
+            if (documentProducer.peekBufferedItems().length > 0) {
+                documentProducerContinuationToken = documentProducer.previousContinuationToken;
+            } else {
+                documentProducerContinuationToken = documentProducer.continuationToken;
+            }
+                // has unused buffered item so use the previous continuation token
+            return {
+                'token': withNullDefault(documentProducerContinuationToken),
+                'range': range
+            };
+        },
+
+        _recursiveDrain: function (maxElements, documentProducer, callback) {
+            var buffer = [];
+            var that = this;
+            var implFunc = function () {
+
+                // enough data is buffered
+                if (maxElements <= buffer.length) {
+                    return callback(undefined, buffer);
+                }
+
+                if (maxElements < buffer.length + documentProducer.peekBufferedItems().length) {
+                    return callback(undefined, buffer);
+                }
+
+                if (documentProducer.peekBufferedItems().length > 0) {
+                    buffer = buffer.concat(documentProducer.consumeBufferedItems());
+                    return implFunc();
+                }
+
+                if (documentProducer.allFetched) {
+                    return callback(undefined, buffer);
+                }
+                
+                documentProducer.bufferMore(function (err, resources, respHeaders) {
+                    that._mergeWithActiveResponseHeaders(respHeaders);
+                    if (err) {
+                        that.err = documentProducer.err;
+                        return callback(that.err, undefined);
+                    }
+                    return implFunc()
+                });
+            };
+
+            implFunc();
+        },
+
+        _fetchMoreImplementation: function (callback) {
+            var that = this;
+            this.endpoint.nextItem(function (err, resources, headers) {
+
+                that._mergeWithActiveResponseHeaders(headers);
+
+                if (err) {
+                    return callback(err, undefined, that._getAndResetActiveResponseHeaders());
+                }
+                // concatinate the results and fetch more
+
+                if (resources === undefined) {
+                    // no more results
+                    if (that._fetchMoreTempBufferedResults.length === 0) {
+                        return callback(undefined, undefined, that._getAndResetActiveResponseHeaders());
+                    }
+
+                    var temp = that._fetchMoreTempBufferedResults;
+                    that._fetchMoreTempBufferedResults = [];
+                    return callback(undefined, temp, that._getAndResetActiveResponseHeaders());
+                }
+
+                that._fetchMoreTempBufferedResults = that._fetchMoreTempBufferedResults.concat(resources);
+
+                if (that.pageSize <= that._fetchMoreTempBufferedResults.length) {
+                    // fetched enough results
+                    var temp = that._fetchMoreTempBufferedResults;
+                    that._fetchMoreTempBufferedResults = [];
+
+                    return callback(undefined, temp, that._getAndResetActiveResponseHeaders());
+                }
+
+                that._fetchMoreImplementation(callback);
+            });
+        },
+
+        _createTargetPartitionQueryExecutionContext: function (partitionKeyTargetRange, continuationToken) {
             // creates target partition range Query Execution Context
             var rewrittenQuery = QueryExecutionInfoParser.parseRewrittenQuery(this.paritionedQueryExecutionInfo);
             var query = this.query;
@@ -332,7 +603,15 @@ var ParallelQueryExecutionContext = Base.defineClass(
                 rewrittenQuery = rewrittenQuery.replace(FormatPlaceHolder, "true");
                 query['query'] = rewrittenQuery;
             }
-            return new DocumentProducer(this.documentclient, this.collectionLink, query, partitionKeyTargetRange);
+
+            var options = JSON.parse(JSON.stringify(this.options));
+            if (continuationToken) {
+                options.continuation = continuationToken;
+            } else {
+                options.continuation = undefined;
+            }
+
+            return new DocumentProducer(this.documentclient, this.collectionLink, query, partitionKeyTargetRange, options);
         },
 
         _onTargetPartitionRanges: function (callback) {
@@ -341,9 +620,11 @@ var ParallelQueryExecutionContext = Base.defineClass(
             var queryRanges = parsedRanges.map(function (item) { return QueryRange.parseFromDict(item); });
             return this.routingProvider.getOverlappingRanges(callback, this.collectionLink, queryRanges);
         },
-    }, 
+    },
     {
-        STATES: Object.freeze({ started: "started", inProgress: "inProgress", ended: "ended" })
+        STATES: Object.freeze({ started: "started", inProgress: "inProgress", ended: "ended" }),
+        DEFAULT_PAGE_SIZE: 10
+
     }
 );
 //SCRIPT END

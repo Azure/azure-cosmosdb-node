@@ -1,6 +1,6 @@
 ﻿/*
 The MIT License (MIT)
-Copyright (c) 2014 Microsoft Corporation
+Copyright (c) 2017 Microsoft Corporation
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@ SOFTWARE.
 
 var Base = require("../base")
     , DefaultQueryExecutionContext = require("./defaultQueryExecutionContext")
+    , HttpHeaders = require("../constants").HttpHeaders
+    , HeaderUtils = require("./headerUtils")
     , assert = require("assert")
     , util = require("util");
 
@@ -39,42 +41,123 @@ var DocumentProducer = Base.defineClass(
      * @param {object} targetPartitionKeyRange       - Query Target Partition key Range
      * @ignore
      */
-    function (documentclient, collectionLink, query, targetPartitionKeyRange) {
+    function (documentclient, collectionLink, query, targetPartitionKeyRange, options) {
         this.documentclient = documentclient;
         this.collectionLink = collectionLink;
         this.query = query;
         this.targetPartitionKeyRange = targetPartitionKeyRange;
-        this.bufferedCurrentItem = undefined;
+        this.itemsBuffer = [];
+ 
+        this.allFetched = false;
+        this.err = undefined;
+
+        this.previousContinuationToken = undefined;
+        this.continuationToken = undefined;
+        this._respHeaders = HeaderUtils.getInitialHeader();
 
         var isNameBased = Base.isLinkNameBased(collectionLink);
         var path = this.documentclient.getPathFromLink(collectionLink, "docs", isNameBased);
         var id = this.documentclient.getIdFromLink(collectionLink, isNameBased);
-        var options = {};
 
         var that = this;
-        var fetchFunction =  function (options, callback) {
+        var fetchFunction = function (options, callback) {
             that.documentclient.queryFeed.call(documentclient,
                 documentclient,
-                    path,
-                    "docs",
-                    id,
-                    function (result) { return result.Documents; },
-                    function (parent, body) { return body; },
-                    query,
-                    options,
-                    callback,
-                    that.targetPartitionKeyRange["id"]);
+                path,
+                "docs",
+                id,
+                function (result) { return result.Documents; },
+                function (parent, body) { return body; },
+                query,
+                options,
+                callback,
+                that.targetPartitionKeyRange["id"]);
         };
         this.internalExecutionContext = new DefaultQueryExecutionContext(documentclient, query, options, fetchFunction);
     },
     {
         /**
-         * Synchronously gives the bufferend current item if any
-         * @returns {Object}       - buffered current item if any
+         * Synchronously gives the buffered items if any
+         * @returns {Object}       - buffered current items if any
          * @ignore
          */
-        peek: function () {
-            return this.bufferedCurrentItem;
+        peekBufferedItems: function () {
+            return this.itemsBuffer;
+        },
+
+        /**
+         * Synchronously gives the buffered items if any and moves inner indices.
+         * @returns {Object}       - buffered current items if any
+         * @ignore
+         */
+        consumeBufferedItems: function () {
+            var res = this.itemsBuffer;
+            this.itemsBuffer = [];
+            this._updateStates(undefined, this.continuationToken === null || this.continuationToken === undefined);
+            return res;
+        },
+
+        _getAndResetActiveResponseHeaders: function () {
+            var ret = this._respHeaders;
+            this._respHeaders = HeaderUtils.getInitialHeader();
+            return ret;
+        },
+
+        _updateStates: function (err, allFetched) {
+            if (err) {
+                this.err = err
+                return;
+            }
+            if (allFetched) {
+                this.allFetched = true;
+            }
+            if (this.internalExecutionContext.continuation === this.continuationToken) {
+                // nothing changed
+                return;
+            }
+            this.previousContinuationToken = this.continuationToken;
+            this.continuationToken = this.internalExecutionContext.continuation;
+        },
+
+        /**
+         * Fetches and bufferes the next page of results and executes the given callback
+         * @memberof DocumentProducer
+         * @instance
+         * @param {callback} callback - Function to execute for next page of result.
+         *                              the function takes three parameters error, resources, headerResponse.
+        */
+        bufferMore: function (callback) {
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.err) {
+                        reject({error:self.err, items:undefined, headers:undefined});
+                } else {
+                    self.internalExecutionContext.fetchMore(function (err, resources, headerResponse) {
+                        self._updateStates(err, resources === undefined);
+                        if (err) {
+                            reject({error:err, items:undefined, headers:headerResponse});
+                        } else {
+                            if (resources != undefined) {
+                                // some more results
+                                self.itemsBuffer = self.itemsBuffer.concat(resources);
+                            } 
+                            resolve({error:undefined, items:resources, headers:headerResponse});
+                        }
+                    });
+                }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function bufferMoreSuccess(bufferMoreHash) {
+                        callback(bufferMore.error, bufferMore.items, bufferMore.headers);
+                    },
+                    function bufferMoreFailure(bufferMoreHash) {
+                        callback(bufferMore.error, bufferMore.items, bufferMore.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -95,26 +178,28 @@ var DocumentProducer = Base.defineClass(
         nextItem: function (callback) {
             var self = this;
             var promise = new Promise(function (resolve, reject) {
-                this.internalExecutionContext.nextItem().then(
-                    function (response) {
-                        self.bufferedCurrentItem = undefined;
-                        resolve(response);
-                    },
-                    function (response) {
-                        self.bufferedCurrentItem = undefined;
-                        reject(response);
-                    }
-                );
+                if (self.err) {
+                    reject({error:self.err, item:undefined, headers:undefined});
+                } else {
+                    self.current().then(
+                        function (response) {
+                            var extracted = self.itemsBuffer.shift();
+                            assert.equal(extracted, item);
+                            resolve(response);
+                        },
+                        reject
+                    );
+                }
             });
             if (!callback) {
                 return promise;
             } else {
                 promise.then(
                     function nextItemSuccess(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     },
                     function nextItemFailure(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.item);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     }
                 );
             }
@@ -129,28 +214,34 @@ var DocumentProducer = Base.defineClass(
         current: function (callback) {
             var self = this;
             var promise = new Promise(function (resolve, reject) {
-                this.internalExecutionContext.current().then(
-                    function (response) {
-                        // sets the buffered current item for non async access
-                        self.bufferedCurrentItem = response.item;
-                        resolve(response);
-                    },
-                    function (response) {
-                        // sets the buffered current item for non async access
-                        self.bufferedCurrentItem = response.item;
-                        reject(response);
-                    }
-                );
+                if (self.itemsBuffer.length > 0) {
+                    resolve({error:undefined, item:self.itemsBuffer[0], headers:self._getAndResetActiveResponseHeaders()});
+                } else if (self.allFetched) {
+                    resolve({error:undefined, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                } else {
+                    self.bufferMore().then(
+                        function (response) {
+                            if (response.items === undefined) {
+                                resolve({error:undefined, item:undefined, headers:response.headers);
+                            } else {
+                                HeaderUtils.mergeHeaders(self._respHeaders, response.headers);
+
+                                self.current().then(resolve, reject);
+                            }
+                        },
+                        reject
+                    );
+                }
             });
             if (!callback) {
                 return promise;
             } else {
                 promise.then(
                     function currentSuccess(currentHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     },
                     function currentFailure(currenttHash) {
-                        callback(currentHash.error, currentHash.item);
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
                     }
                 );
             }
@@ -221,8 +312,8 @@ var OrderByDocumentProducerComparator = Base.defineClass(
     },
     {
         compare: function (docProd1, docProd2) {
-            var orderByItemsRes1 = this.getOrderByItems(docProd1.peek());
-            var orderByItemsRes2 = this.getOrderByItems(docProd2.peek());
+            var orderByItemsRes1 = this.getOrderByItems(docProd1.peekBufferedItems()[0]);
+            var orderByItemsRes2 = this.getOrderByItems(docProd2.peekBufferedItems()[0]);
 
             // validate order by items and types
             // TODO: once V1 order by on different types is fixed this need to change
@@ -288,7 +379,7 @@ var OrderByDocumentProducerComparator = Base.defineClass(
                 return 'NoValue';
             }
             var type = typeof (orderByItem['item']);
-            this._throwIf(! type in this._typeOrdComparator, util.format("unrecognizable type %s", type));
+            this._throwIf(!type in this._typeOrdComparator, util.format("unrecognizable type %s", type));
             return type;
         },
 
@@ -296,7 +387,7 @@ var OrderByDocumentProducerComparator = Base.defineClass(
             return res['orderByItems'];
         },
 
-        _throwIf: function(condition, msg) {
+        _throwIf: function (condition, msg) {
             if (condition) {
                 throw Error(msg);
             }

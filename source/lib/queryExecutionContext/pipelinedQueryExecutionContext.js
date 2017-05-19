@@ -1,6 +1,6 @@
 ﻿/*
 The MIT License (MIT)
-Copyright (c) 2014 Microsoft Corporation
+Copyright (c) 2017 Microsoft Corporation
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,8 @@ var Base = require("../base")
     , DefaultQueryExecutionContext = require("./defaultQueryExecutionContext")
     , endpointComponent = require('./endpointComponent')
     , assert = require("assert")
-    , QueryExecutionInfoParser = require("./partitionedQueryExecutionContextInfoParser");
+    , QueryExecutionInfoParser = require("./partitionedQueryExecutionContextInfoParser")
+    , HeaderUtils = require("./headerUtils");
 
 //SCRIPT START
 var PipelinedQueryExecutionContext = Base.defineClass(
@@ -79,9 +80,22 @@ var PipelinedQueryExecutionContext = Base.defineClass(
         fetchMore: function (callback) {
             var self = this;
             var promise = new Promise(function (resolve, reject) {
-                self._fetchMoreTempBufferedResults = [];
-                self._fetchMoreLastResHeaders = undefined;
-                self._fetchMoreImplementation().then(resolve, reject);
+                // if the wrapped endpoint has different implementation for fetchMore use that
+                // otherwise use the default implementation
+                if (typeof this.endpoint.fetchMore === 'function') {
+                    // cannot "promisify" 'fetchMore' because it already returns a Boolean (primitive)
+                    self.endpoint.fetchMore(function(error, items, headers) {
+                        if (error) {
+                            reject({error:error, items:items, headers:headers});
+                        } else {
+                            resolve({error:error, items:items, headers:headers});
+                        }
+                    });
+                } else {
+                    self._fetchMoreTempBufferedResults = [];
+                    self._fetchMoreLastResHeaders = HeaderUtils.getInitialHeader();
+                    self._fetchMoreImplementation().then(resolve, reject);
+                }
             });
             if (!callback) {
                 return promise;
@@ -100,20 +114,19 @@ var PipelinedQueryExecutionContext = Base.defineClass(
         _fetchMoreImplementation: function (callback) {
             var self = this;
             var promise = new Promise(function (resolve, reject) {
-                var counter = 0;
-
                 self.endpoint.nextItem().then(
                     function (response) {
+                        HeaderUtils.mergeHeaders(self._fetchMoreRespHeaders, response.headers);
                         // concatinate the results and fetch more
                         self._fetchMoreLastResHeaders = response.headers;
                         if (response.items === undefined) {
                             // no more results
                             if (self._fetchMoreTempBufferedResults.length === 0) {
-                                resolve({ error: undefined, items: undefined, headers: self._fetchMoreLastResHeaders });
+                                resolve({error:undefined, items:undefined, headers:self._fetchMoreRespHeaders});
                             } else {
                                 var temp = self._fetchMoreTempBufferedResults;
                                 self._fetchMoreTempBufferedResults = [];
-                                resolve({ error: undefined, items: temp, headers: self._fetchMoreLastResHeaders });
+                                resolve({error:undefined, items:temp, headers:self._fetchMoreRespHeaders});
                             }
                         } else {
                             self._fetchMoreTempBufferedResults = self._fetchMoreTempBufferedResults.concat(response.items);
@@ -123,14 +136,15 @@ var PipelinedQueryExecutionContext = Base.defineClass(
                                 var temp = self._fetchMoreTempBufferedResults;
                                 self._fetchMoreTempBufferedResults = [];
 
-                                resolve({ error: undefined, items: temp, headers: self._fetchMoreLastResHeaders });
+                                resolve({error:undefined, items:temp, headers:self._fetchMoreRespHeaders});
                             } else {
-                                self._fetchMoreImplementation().then(resolve, reject);
+                                self._fetchMoreImplementation.then(resolve, reject);
                             }
                         }
                     },
                     function (rejection) {
-                        reject({ error: rejection.error, items: undefined, headers: rejection.headers });
+                        HeaderUtils.mergeHeaders(self._fetchMoreRespHeaders, rejection.headers);
+                        reject({error:rejection.error, items:undefined, headers:self._fetchMoreRespHeaders);
                     }
                 );
             });
@@ -149,7 +163,7 @@ var PipelinedQueryExecutionContext = Base.defineClass(
         },
     },
     {
-        DEFAULT_PAGE_SIZE: 1000
+        DEFAULT_PAGE_SIZE: 10
     }
 );
 //SCRIPT END
