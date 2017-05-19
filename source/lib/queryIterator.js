@@ -113,10 +113,10 @@ var QueryIterator = Base.defineClass(
             } else {
                 promise.then(
                     function toArraySuccess(toArrayHash) {
-                        callback(toArrayHash.error, toArrayHash.items, toArrayHash.headers);
+                        callback(toArrayHash.error, toArrayHash.list, toArrayHash.headers);
                     },
                     function toArrayFailure(toArrayHash) {
-                        callback(toArrayHash.error, toArrayHash.items, toArrayHash.headers);
+                        callback(toArrayHash.error, toArrayHash.list, toArrayHash.headers);
                     }
                 );
             }
@@ -133,10 +133,10 @@ var QueryIterator = Base.defineClass(
             var promise = new Promise(function (resolve, reject) {
                 self.queryExecutionContext.fetchMore().then(
                     function (response) {
-                        resolve({ error: undefined, items: response.items, headers: response.headers });
+                        resolve({ error: undefined, list: response.list, headers: response.headers });
                     },
                     function (err, resources, responseHeaders) {
-                        reject({ error: rejection.error, items: undefined, headers: rejection.headers });
+                        reject({ error: rejection.error, list: undefined, headers: rejection.headers });
                     }
                 );
             });
@@ -145,10 +145,10 @@ var QueryIterator = Base.defineClass(
             } else {
                 promise.then(
                     function executeNextSuccess(executeNextHash) {
-                        callback(executeNextHash.error, executeNextHash.items, executeNextHash.headers);
+                        callback(executeNextHash.error, executeNextHash.list, executeNextHash.headers);
                     },
                     function executeNextFailure(executeNextHash) {
-                        callback(executeNextHash.error, executeNextHash.items, executeNextHash.headers);
+                        callback(executeNextHash.error, executeNextHash.list, executeNextHash.headers);
                     }
                 );
             }
@@ -174,14 +174,14 @@ var QueryIterator = Base.defineClass(
 
                         if (response.item === undefined) {
                             // no more results
-                            resolve({ error: undefined, items: self.toArrayTempResources, headers: self.toArrayLastResHeaders });
+                            resolve({ error: undefined, list: self.toArrayTempResources, headers: self.toArrayLastResHeaders });
                         } else {
                             self.toArrayTempResources = self.toArrayTempResources.concat(response.item);
                             self._toArrayImplementation().then(resolve, reject);
                         }
                     },
                     function (rejection) {
-                        reject({ error: rejection.error, items: undefined, headers: rejection.headers });
+                        reject({ error: rejection.error, list: undefined, headers: rejection.headers });
                     }
                 );
             });
@@ -190,10 +190,10 @@ var QueryIterator = Base.defineClass(
             } else {
                 promise.then(
                     function _toArrayImplementationSuccess(_toArrayImplementationHash) {
-                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.items, _toArrayImplementationHash.headers);
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
                     },
                     function _toArrayImplementationFailure(_toArrayImplementationHash) {
-                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.items, _toArrayImplementationHash.headers);
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
                     }
                 );
             }
