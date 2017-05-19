@@ -1495,7 +1495,7 @@ var DocumentClient = Base.defineClass(
                         },
                         function (rejection) {
                             // Omit 'partitionKeyDefinition'.
-                            reject({ error: rejection.error, items: rejection.items, headers: rejection.headers });
+                            reject({ error: rejection.error, list: rejection.list, headers: rejection.headers });
                         }
                     );
                 }
@@ -2448,7 +2448,7 @@ var DocumentClient = Base.defineClass(
                         },
                         function (rejection) {
                             // Omit 'partitionKeyDefinition'.
-                            reject({ error: rejection.error, items: rejection.items, headers: rejection.headers });
+                            reject({ error: rejection.error, list: rejection.list, headers: rejection.headers });
                         }
                     );
                 }
@@ -2505,7 +2505,7 @@ var DocumentClient = Base.defineClass(
                         },
                         function (rejection) {
                             // Omit 'partitionKeyDefinition'.
-                            reject({ error: rejection.error, items: rejection.items, headers: rejection.headers });
+                            reject({ error: rejection.error, list: rejection.list, headers: rejection.headers });
                         }
                     );
                 }
@@ -2730,14 +2730,14 @@ var DocumentClient = Base.defineClass(
                 // $ISSUE-felixfan-2016-03-17: Make name based path and link based path use the same key
                 // $ISSUE-felixfan-2016-03-17: Refresh partitionKeyDefinitionCache when necessary
                 if (collectionLink in self.partitionKeyDefinitionCache) {
-                    resolve({ error: undefined, partitionKeyDefinition: self.partitionKeyDefinitionCache[collectionLink], items: undefined, headers: undefined });
+                    resolve({ error: undefined, partitionKeyDefinition: self.partitionKeyDefinitionCache[collectionLink], list: undefined, headers: undefined });
                 } else {
                     self.readCollection(collectionLink).then(
                         function (response) {
-                            resolve({ error: response.error, partitionKeyDefinition: self.partitionKeyDefinitionCache[collectionLink], items: response.collection, headers: response.headers });
+                            resolve({ error: response.error, partitionKeyDefinition: self.partitionKeyDefinitionCache[collectionLink], list: response.collection, headers: response.headers });
                         },
                         function (rejection) {
-                            reject({ error: rejection.error, partitionKeyDefinition: undefined, items: rejection.collection, header: rejection.headers });
+                            reject({ error: rejection.error, partitionKeyDefinition: undefined, list: rejection.collection, header: rejection.headers });
                         }
                     );
                 }
@@ -2747,10 +2747,10 @@ var DocumentClient = Base.defineClass(
             } else {
                 promise.then(
                     function getPartitionKeyDefinitionSuccess(getPartitionKeyDefinitionHash) {
-                        callback(getPartitionKeyDefinitionHash.error, getPartitionKeyDefinitionHash.partitionKeyDefinition, getPartitionKeyDefinitionHash.items, getPartitionKeyDefinitionHash.headers);
+                        callback(getPartitionKeyDefinitionHash.error, getPartitionKeyDefinitionHash.partitionKeyDefinition, getPartitionKeyDefinitionHash.list, getPartitionKeyDefinitionHash.headers);
                     },
                     function getPartitionKeyDefinitionFailure(getPartitionKeyDefinitionHash) {
-                        callback(getPartitionKeyDefinitionHash.error, getPartitionKeyDefinitionHash.partitionKeyDefinition, getPartitionKeyDefinitionHash.items, getPartitionKeyDefinitionHash.headers);
+                        callback(getPartitionKeyDefinitionHash.error, getPartitionKeyDefinitionHash.partitionKeyDefinition, getPartitionKeyDefinitionHash.list, getPartitionKeyDefinitionHash.headers);
                     }
                 );
             }
