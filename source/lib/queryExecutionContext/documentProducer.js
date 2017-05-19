@@ -130,18 +130,18 @@ var DocumentProducer = Base.defineClass(
             var self = this;
             var promise = new Promise(function (resolve, reject) {
                 if (self.err) {
-                        reject({error:self.err, items:undefined, headers:undefined});
+                        reject({error:self.err, list:undefined, headers:undefined});
                 } else {
                     self.internalExecutionContext.fetchMore(function (err, resources, headerResponse) {
                         self._updateStates(err, resources === undefined);
                         if (err) {
-                            reject({error:err, items:undefined, headers:headerResponse});
+                            reject({error:err, list:undefined, headers:headerResponse});
                         } else {
                             if (resources != undefined) {
                                 // some more results
                                 self.itemsBuffer = self.itemsBuffer.concat(resources);
                             } 
-                            resolve({error:undefined, items:resources, headers:headerResponse});
+                            resolve({error:undefined, list:resources, headers:headerResponse});
                         }
                     });
                 }
@@ -151,10 +151,10 @@ var DocumentProducer = Base.defineClass(
             } else {
                 promise.then(
                     function bufferMoreSuccess(bufferMoreHash) {
-                        callback(bufferMore.error, bufferMore.items, bufferMore.headers);
+                        callback(bufferMore.error, bufferMore.list, bufferMore.headers);
                     },
                     function bufferMoreFailure(bufferMoreHash) {
-                        callback(bufferMore.error, bufferMore.items, bufferMore.headers);
+                        callback(bufferMore.error, bufferMore.list, bufferMore.headers);
                     }
                 );
             }
@@ -221,7 +221,7 @@ var DocumentProducer = Base.defineClass(
                 } else {
                     self.bufferMore().then(
                         function (response) {
-                            if (response.items === undefined) {
+                            if (response.list === undefined) {
                                 resolve({error:undefined, item:undefined, headers:response.headers);
                             } else {
                                 HeaderUtils.mergeHeaders(self._respHeaders, response.headers);
