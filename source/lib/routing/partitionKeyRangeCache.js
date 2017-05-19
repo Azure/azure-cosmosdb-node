@@ -66,7 +66,7 @@ var PartitionKeyRangeCache = Base.defineClass(
                             partitionKeyRangesIterator.toArray().then(
                                 function (response) {
                                     collectionRoutingMap = CollectionRoutingMapFactory.createCompleteRoutingMap(
-                                        response.items.map(function (r) { return [r, true]; }),
+                                        response.list.map(function (r) { return [r, true]; }),
                                         collectionId);
 
                                     self.collectionRoutingMapByCollectionId[collectionId] = collectionRoutingMap;
