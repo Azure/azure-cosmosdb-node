@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -127,23 +127,37 @@ var DocumentProducer = Base.defineClass(
          *                              the function takes three parameters error, resources, headerResponse.
         */
         bufferMore: function (callback) {
-            var that = this;
-            if (that.err) {
-                return callback(that.err);
-            }
-
-            this.internalExecutionContext.fetchMore(function (err, resources, headerResponse) {
-                that._updateStates(err, resources === undefined);
-                if (err) {
-                    return callback(err, undefined, headerResponse);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.err) {
+                        reject({error:self.err, list:undefined, headers:undefined});
+                } else {
+                    self.internalExecutionContext.fetchMore(function (err, resources, headerResponse) {
+                        self._updateStates(err, resources === undefined);
+                        if (err) {
+                            reject({error:err, list:undefined, headers:headerResponse});
+                        } else {
+                            if (resources != undefined) {
+                                // some more results
+                                self.itemsBuffer = self.itemsBuffer.concat(resources);
+                            } 
+                            resolve({error:undefined, list:resources, headers:headerResponse});
+                        }
+                    });
                 }
-                
-                if (resources != undefined) {
-                    // some more results
-                    that.itemsBuffer = that.itemsBuffer.concat(resources);
-                } 
-                return callback(undefined, resources, headerResponse);
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function bufferMoreSuccess(bufferMoreHash) {
+                        callback(bufferMore.error, bufferMore.list, bufferMore.headers);
+                    },
+                    function bufferMoreFailure(bufferMoreHash) {
+                        callback(bufferMore.error, bufferMore.list, bufferMore.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -162,19 +176,33 @@ var DocumentProducer = Base.defineClass(
         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
         */
         nextItem: function (callback) {
-            var that = this;
-            if (that.err) {
-                return callback(that.err);
-            }
-            this.current(function (err, item, headers) {
-                if (err) {
-                    return callback(err, undefined, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.err) {
+                    reject({error:self.err, item:undefined, headers:undefined});
+                } else {
+                    self.current().then(
+                        function (response) {
+                            var extracted = self.itemsBuffer.shift();
+                            assert.equal(extracted, item);
+                            resolve(response);
+                        },
+                        reject
+                    );
                 }
-
-                var extracted = that.itemsBuffer.shift();
-                assert.equal(extracted, item);
-                callback(undefined, item, headers);
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -184,27 +212,39 @@ var DocumentProducer = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function (callback) {
-            if (this.itemsBuffer.length > 0) {
-                return callback(undefined, this.itemsBuffer[0], this._getAndResetActiveResponseHeaders());
-            }
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.itemsBuffer.length > 0) {
+                    resolve({error:undefined, item:self.itemsBuffer[0], headers:self._getAndResetActiveResponseHeaders()});
+                } else if (self.allFetched) {
+                    resolve({error:undefined, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                } else {
+                    self.bufferMore().then(
+                        function (response) {
+                            if (response.list === undefined) {
+                                resolve({error:undefined, item:undefined, headers:response.headers);
+                            } else {
+                                HeaderUtils.mergeHeaders(self._respHeaders, response.headers);
 
-            if (this.allFetched) {
-                return callback(undefined, undefined, this._getAndResetActiveResponseHeaders());
-            }
-
-            var that = this;
-            this.bufferMore(function (err, items, headers) {
-                if (err) {
-                    return callback(err, undefined, headers);
+                                self.current().then(resolve, reject);
+                            }
+                        },
+                        reject
+                    );
                 }
-
-                if (items === undefined) {
-                    return callback(undefined, undefined, headers);
-                }
-                HeaderUtils.mergeHeaders(that._respHeaders, headers);
-
-                that.current(callback);
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    },
+                    function currentFailure(currenttHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    }
+                );
+            }
         },
     },
 

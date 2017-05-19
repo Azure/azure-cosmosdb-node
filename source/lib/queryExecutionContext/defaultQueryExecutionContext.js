@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -56,11 +56,31 @@ var DefaultQueryExecutionContext = Base.defineClass(
          * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
          */
         nextItem: function (callback) {
-            var that = this;
-            this.current(function (err, resources, headers) {
-                ++that.currentIndex;
-                callback(err, resources, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.current().then(
+                    function (response) {
+                        ++self.currentIndex;
+                        resolve({ error: response.error, item: response.item, headers: reponse.headers });
+                    },
+                    function (rejection) {
+                        ++self.currentIndex;
+                        reject({ error: rejection.error, item: rejection.item, headers: rejection.headers });
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -70,31 +90,46 @@ var DefaultQueryExecutionContext = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function(callback) {
-            var that = this;
-            if (this.currentIndex < this.resources.length) {
-                return callback(undefined, this.resources[this.currentIndex], undefined);
-            }
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.currentIndex < self.resources.length) {
+                    resolve({ error:undefined, item: self.resources[self.currentIndex], headers: undefined });
+                }
 
-            if (this._canFetchMore()) {
-                this.fetchMore(function (err, resources, headers) {
-                    if (err) {
-                        return callback(err, undefined, headers);
-                    }
-                    that.resources = resources;
-                    if (that.resources.length === 0) {
-                        if (!that.continuation && that.currentPartitionIndex >= that.fetchFunctions.length) {
-                            that.state = DefaultQueryExecutionContext.STATES.ended;
-                            callback(undefined, undefined, headers);
-                        } else {
-                            that.current(callback);
+                if (self._canFetchMore()) {
+                    self.fetchMore().then(
+                        function (response) {
+                            self.resources = response.resources;
+                            if (self.resources.length === 0) {
+                                if (!self.continuation && self.currentPartitionIndex >= self.fetchFunctions.length) {
+                                    self.state = DefaultQueryExecutionContext.STATES.ended;
+                                    resolve({ error: undefined, item: undefined, headers: response.headers });
+                                } else {
+                                    self.current().then(resolve, reject);
+                                }
+                            }
+                            resolve({ error: undefined, item: self.resources[self.currentIndex], headers: response.headers });
+                        },
+                        function (rejection) {
+                            reject({ error: rejection.error, item: undefined, headers: rejection.headers });
                         }
-                        return undefined;
-                    }
-                    callback(undefined, that.resources[that.currentIndex], headers);
-                });
+                    );
+                } else {
+                    self.state = DefaultQueryExecutionContext.STATES.ended;
+                    resolve({ error: undefined, item: undefined, headers: undefined });
+                }
+            });
+            if (!callback) {
+                return promise;
             } else {
-                this.state = DefaultQueryExecutionContext.STATES.ended;
-                callback(undefined, undefined, undefined);
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    },
+                    function currentFailure(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    }
+                );
             }
         },
 
@@ -115,36 +150,51 @@ var DefaultQueryExecutionContext = Base.defineClass(
          * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
          */
         fetchMore: function (callback) {
-            if (this.currentPartitionIndex >= this.fetchFunctions.length) {
-                return callback(undefined, undefined, undefined);
-            }
-            var that = this;
-            // Keep to the original continuation and to restore the value after fetchFunction call
-            var originalContinuation = this.options.continuation;
-            this.options.continuation = this.continuation;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.currentPartitionIndex >= self.fetchFunctions.length) {
+                    resolve({ error: undefined, list: undefined, headers: undefined });
+                } else {
+                    // Keep to the original continuation and to restore the value after fetchFunction call
+                    var originalContinuation = self.options.continuation;
+                    self.options.continuation = self.continuation;
 
-            // Return undefined if there is no more results
-            if (this.currentPartitionIndex >= that.fetchFunctions.length) {
-                return callback(undefined, undefined, undefined);
-            }
+                    // Return undefined if there is no more results
+                    if (self.currentPartitionIndex >= self.fetchFunctions.length) {
+                        resolve({ error: undefined, list: undefined, headers: undefined });
+                    } else {
+                        var fetchFunction = self.fetchFunctions[self.currentPartitionIndex];
+                        fetchFunction(self.options, function (err, resources, responseHeaders) {
+                            if (err) {
+                                self.state = DefaultQueryExecutionContext.STATES.ended;
+                                reject({ error: err, list: undefined, headers: responseHeaders });
+                            } else {
+                                self.continuation = responseHeaders[Constants.HttpHeaders.Continuation];
+                                if (!self.continuation) {
+                                    ++self.currentPartitionIndex;
+                                }
 
-            var fetchFunction = this.fetchFunctions[this.currentPartitionIndex];
-            fetchFunction(this.options, function(err, resources, responseHeaders){
-                if(err) {
-                    that.state = DefaultQueryExecutionContext.STATES.ended;
-                    return callback(err, undefined, responseHeaders);
+                                self.state = DefaultQueryExecutionContext.STATES.inProgress;
+                                self.currentIndex = 0;
+                                self.options.continuation = originalContinuation;
+                                resolve({ error: undefined, list: resources, headers: responseHeaders });
+                            }
+                        });
+                    }
                 }
-
-                that.continuation = responseHeaders[Constants.HttpHeaders.Continuation];
-                if (!that.continuation) {
-                    ++that.currentPartitionIndex;
-                }
-
-                that.state = DefaultQueryExecutionContext.STATES.inProgress;
-                that.currentIndex = 0;
-                that.options.continuation = originalContinuation;
-                callback(undefined, resources, responseHeaders);
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function fetchMoreSuccess(fetchMoreHash) {
+                        callback(fetchMoreHash.error, fetchMoreHash.list, fetchMoreHash.headers);
+                    },
+                    function fetchMoreFailure(fetchMoreHash) {
+                        callback(fetchMoreHash.error, fetchMoreHash.list, fetchMoreHash.headers);
+                    }
+                );
+            }
         },
         
         _canFetchMore: function () {

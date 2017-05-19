@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -118,20 +118,35 @@ var Range = Base.defineClass(
 
          /** @ignore */
         _toArrayImplementation: function(callback){
-            var that = this;
-            if (this._canFetchMore()) {
-                this._fetchMore(function(err, resources, headers){
-                    if(err) {
-                        return callback(err, undefined, headers);
-                    }
-
-                    that.resHeaders = headers;
-                    that.resources = that.resources.concat(resources);
-                    that._toArrayImplementation(callback);
-                });
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self._canFetchMore()) {
+                    self._fetchMore().then(
+                        function (response) {
+                            self.resHeaders = response.headers;
+                            self.resources = self.resources.concat(response.item);
+                            self._toArrayImplementation().then(resolve, reject);
+                        },
+                        function (rejection) {
+                            reject({ error: rejection.error, list: undefined, headers: rejection.headers });
+                        }
+                    );
+                } else {
+                    self._state = self._states.ended;
+                    resolve({ error: undefined, list: self.resources, headers: self.resHeaders });
+                }
+            });
+            if (!callback) {
+                return promise;
             } else {
-                this._state = this._states.ended;
-                callback(undefined, this.resources, this.resHeaders);
+                promise.then(
+                    function _toArrayImplementationSuccess(_toArrayImplementationHash) {
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
+                    },
+                    function _toArrayImplementationFailure(_toArrayImplementationHash) {
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
+                    }
+                );
             }
         },
 

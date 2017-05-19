@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -61,22 +61,36 @@ var ProxyQueryExecutionContext = Base.defineClass(
          * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
          */
         nextItem: function (callback) {
-            var that = this;
-            this.queryExecutionContext.nextItem(function (err, resources, headers) {
-
-                if (err) {
-                    if (that._hasPartitionedExecutionInfo(err)) {
-                        // if that's a partitioned execution info switches the execution context
-                        var partitionedExecutionInfo = that._getParitionedExecutionInfo(err);
-                        that.queryExecutionContext = that._createPipelinedExecutionContext(partitionedExecutionInfo);
-                        return that.nextItem(callback);
-                    } else {
-                        return callback(err, undefined, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.queryExecutionContext.nextItem().then(
+                    function (response) {
+                        resolve({ error: undefined, item: response.item, headers: response.headers });
+                    },
+                    function (rejection) {
+                        if (self._hasPartitionedExecutionInfo(rejection.error)) {
+                            // if that's a partitioned execution info switches the execution context
+                            var partitionedExecutionInfo = self._getParitionedExecutionInfo(rejection.error);
+                            self.queryExecutionContext = self._createPipelinedExecutionContext(partitionedExecutionInfo);
+                            self.nextItem().then(resolve, reject);
+                        } else {
+                            reject({ error: rejection.error, item: undefined, headers: rejection.headers });
+                        }
                     }
-                } else {
-                    callback(undefined, resources, headers);
-                }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    }
+                );
+            }
         },
 
         _createPipelinedExecutionContext: function (partitionedExecutionInfo) {
@@ -107,22 +121,36 @@ var ProxyQueryExecutionContext = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function (callback) {
-            var that = this;
-            this.queryExecutionContext.current(function (err, resources, headers) {
-
-                if (err) {
-                    if (that._hasPartitionedExecutionInfo(err)) {
-                        // if that's a partitioned execution info switches the execution context
-                        var partitionedExecutionInfo = that._getParitionedExecutionInfo(err);
-                        that.queryExecutionContext = that._createPipelinedExecutionContext(partitionedExecutionInfo);
-                        return that.current(callback);
-                    } else {
-                        return callback(err, undefined, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.queryExecutionContext.current().then(
+                    function (response) {
+                        resolve({ error: undefined, item: response.item, headers: response.headers });
+                    },
+                    function (rejection) {
+                        if (self._hasPartitionedExecutionInfo(rejection.error)) {
+                            // if that's a partitioned execution info switches the execution context
+                            var partitionedExecutionInfo = self._getParitionedExecutionInfo(rejection.error);
+                            self.queryExecutionContext = self._createPipelinedExecutionContext(partitionedExecutionInfo);
+                            self.current().then(resolve, reject);
+                        } else {
+                            reject({ error: rejection.error, item: undefined, headers:rejection.headers });
+                        }
                     }
-                } else {
-                    callback(undefined, resources, headers);
-                }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    },
+                    function currentFailure(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -136,22 +164,36 @@ var ProxyQueryExecutionContext = Base.defineClass(
         },
 
         fetchMore: function (callback) {
-            var that = this;
-
-            this.queryExecutionContext.fetchMore(function (err, resources, headers) {
-                if (err) {
-                    if (that._hasPartitionedExecutionInfo(err)) {
-                        // if that's a partitioned execution info switches the execution context
-                        var partitionedExecutionInfo = that._getParitionedExecutionInfo(err);
-                        that.queryExecutionContext = that._createPipelinedExecutionContext(partitionedExecutionInfo);
-                        return that.queryExecutionContext.fetchMore(callback);
-                    } else {
-                        return callback(err, undefined, headers);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.queryExecutionContext.fetchMore().then(
+                    function (response) {
+                        resolve({ error: undefined, item: response.item, headers: response.headers });
+                    },
+                    function (rejection) {
+                        if (self._hasPartitionedExecutionInfo(rejection.error)) {
+                            // if that's a partitioned execution info switches the execution context
+                            var partitionedExecutionInfo = self._getParitionedExecutionInfo(rejection.error);
+                            self.queryExecutionContext = self._createPipelinedExecutionContext(partitionedExecutionInfo);
+                            self.queryExecutionContext.fetchMore().then(resolve, reject);
+                        } else {
+                            reject({ error: rejection.error, item: undefined, headers: rejection.headers });
+                        }
                     }
-                } else {
-                    callback(undefined, resources, headers);
-                }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function fetchMoreSuccess(fetchMoreHash) {
+                        callback(fetchMoreHash.error, fetchMoreHash.item, fetchMoreHash.headers);
+                    },
+                    function fetchMoreFailure(fetchMoreHash) {
+                        callback(fetchMoreHash.error, fetchMoreHash.item, fetchMoreHash.headers);
+                    }
+                );
+            }
         },
 
         _hasPartitionedExecutionInfo: function (error) {

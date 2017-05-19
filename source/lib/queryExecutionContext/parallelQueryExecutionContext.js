@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -236,100 +236,123 @@ var ParallelQueryExecutionContext = Base.defineClass(
         * @param {callback} callback - Function to execute for each element. the function takes two parameters error, element.
         */
         nextItem: function (callback) {
-            if (this.err) {
-                // if there is a prior error return error
-                return callback(this.err, undefined);
-            }
-            var that = this;
-            this.sem.take(function () {
-                // NOTE: lock must be released before invoking quitting
-                if (that.err) {
-                    // release the lock before invoking callback
-                    that.sem.leave();
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.err) {
                     // if there is a prior error return error
-                    return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
-                }
-
-                if (that.orderByPQ.size() === 0) {
-                    // there is no more results
-                    that.state = ParallelQueryExecutionContext.STATES.ended;
-                    // release the lock before invoking callback
-                    that.sem.leave();
-                    return callback(undefined, undefined, that._getAndResetActiveResponseHeaders());
-                }
-                try {
-                    var targetPartitionRangeDocumentProducer = that.orderByPQ.deq();
-                } catch (e) {
-                    // if comparing elements of the priority queue throws exception
-                    // set that error and return error
-                    that.err = e;
-                    // release the lock before invoking callback
-                    that.sem.leave();
-                    return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
-                }
-
-                targetPartitionRangeDocumentProducer.nextItem(function (err, item, headers) {
-                    that._mergeWithActiveResponseHeaders(headers);
-                    if (err) {
-                        // this should never happen
-                        // because the documentProducer already has buffered an item
-                        // assert err === undefined
-                        that.err =
-                            new Error(
-                                util.format(
-                                    "Extracted DocumentProducer from the priority queue fails to get the buffered item. Due to %s",
-                                    JSON.stringify(err)));
-                        // release the lock before invoking callback
-                        that.sem.leave();
-                        return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
-                    }
-                    if (item === undefined) {
-                        // this should never happen
-                        // because the documentProducer already has buffered an item
-                        // assert item !== undefined
-                        that.err =
-                            new Error(
-                                util.format(
-                                    "Extracted DocumentProducer from the priority queue doesn't have any buffered item!"));
-                        // release the lock before invoking callback
-                        that.sem.leave();
-                        return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
-                    }
-
-                    // we need to put back the document producer to the queue if it has more elements.
-                    // the lock will be released after we know document producer must be put back in the queue or not
-                    targetPartitionRangeDocumentProducer.current(function (err, afterItem, headers) {
-                        try {
-                            that._mergeWithActiveResponseHeaders(headers);
-                            if (err) {
-                                that.err = err;
-                                return;
-                            }
-                            if (afterItem === undefined) {
-                                // no more results is left in this document producer
-                                return;
-                            }
+                    reject({error:self.err, item:undefined, headers:undefined});
+                } else {
+                    self.sem.take(function () {
+                        // NOTE: lock must be released before invoking quitting
+                        if (self.err) {
+                            // release the lock before invoking callback
+                            self.sem.leave();
+                            // if there is a prior error return error
+                            reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                        } else if (self.orderByPQ.size() === 0) {
+                            // there is no more results
+                            self.state = ParallelQueryExecutionContext.STATES.ended;
+                            // release the lock before invoking callback
+                            self.sem.leave();
+                            resolve({error:undefined, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                        } else {
                             try {
-                                var headItem = targetPartitionRangeDocumentProducer.peekBufferedItems()[0];
-                                assert.notStrictEqual(headItem, undefined,
-                                    'Extracted DocumentProducer from PQ is invalid state with no result!');
-                                that.orderByPQ.enq(targetPartitionRangeDocumentProducer);
+                                var targetPartitionRangeDocumentProducer = self.orderByPQ.deq();
                             } catch (e) {
-                                // if comparing elements in priority queue throws exception
-                                // set error
-                                that.err = e;
+                                // if comparing elements of the priority queue throws exception
+                                // set self error and return error
+                                self.err = e;
+                                // release the lock before invoking callback
+                                self.sem.leave();
+                                reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                                return;
                             }
-                            return;
-                        } finally {
-                            // release the lock before returning
-                            that.sem.leave();
+
+                            targetPartitionRangeDocumentProducer.nextItem().then(
+                                function (repsonse) {
+                                    self._mergeWithActiveResponseHeaders(response.headers);
+                                    if (response.item === undefined) {
+                                        // this should never happen
+                                        // because the documentProducer already has buffered an item
+                                        // assert item !== undefined
+                                        self.err =
+                                            new Error(
+                                                util.format(
+                                                    "Extracted DocumentProducer from the priority queue doesn't have any buffered item!"));
+                                        // release the lock before invoking callback
+                                        self.sem.leave();
+                                        reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                                    } else {
+                                        // we need to put back the document producer to the queue if it has more elements.
+                                        // the lock will be released after we know document producer must be put back in the queue or not
+                                        targetPartitionRangeDocumentProducer.current().then(
+                                            function (afterResponse) {
+                                                try {
+                                                    self._mergeWithActiveResponseHeaders(afterResponse.headers);
+                                                    if (afterResponse.item !== undefined) {
+                                                        // there are more results left in this document producer
+                                                        try {
+                                                            var headItem = targetPartitionRangeDocumentProducer.peekBufferedItems()[0];
+                                                            assert.notStrictEqual(headItem, undefined,
+                                                                'Extracted DocumentProducer from PQ is invalid state with no result!');
+                                                            self.orderByPQ.enq(targetPartitionRangeDocumentProducer);
+                                                        } catch (e) {
+                                                            // if comparing elements in priority queue throws exception
+                                                            // set error
+                                                            self.err = e;
+                                                        }
+                                                    }
+                                                } finally {
+                                                    // release the lock before returning
+                                                    self.sem.leave();
+                                                }
+                                            },
+                                            function (afterRejection) {
+                                                try {
+                                                    self._mergeWithActiveResponseHeaders(afterRejection.headers);
+                                                    self.err = afterRejection.error;
+                                                } finally {
+                                                    // release the lock before returning
+                                                    self.sem.leave();
+                                                }
+                                            }
+                                        );
+
+                                        // invoke the callback on the item
+                                        resolve({error:undefined, item:response.item, headers:self._getAndResetActiveResponseHeaders()});
+                                    }
+                                },
+                                function (rejection) {
+                                    self._mergeWithActiveResponseHeaders(rejection.headers);
+                                    // this should never happen
+                                    // because the documentProducer already has buffered an item
+                                    // assert err === undefined
+                                    self.err =
+                                        new Error(
+                                            util.format(
+                                                "Extracted DocumentProducer from the priority queue fails to get the buffered item. Due to %s",
+                                                JSON.stringify(rejection.error)));
+                                    // release the lock before invoking callback
+                                    self.sem.leave();
+                                    reject({error:self.err, item:undefined, headers:self._getAndResetActiveResponseHeaders()});
+                                }
+                            );
                         }
                     });
-
-                    // invoke the callback on the item
-                    callback(undefined, item, that._getAndResetActiveResponseHeaders());
-                });
+                }
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function nextItemSuccess(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    },
+                    function nextItemFailure(nextItemHash) {
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -339,25 +362,39 @@ var ParallelQueryExecutionContext = Base.defineClass(
          * @param {callback} callback - Function to execute for the current element. the function takes two parameters error, element.
          */
         current: function (callback) {
-            if (this.err) {
-                return callback(this.err, undefined, that._getAndResetActiveResponseHeaders());
-            }
-            var that = this;
-            this.sem.take(function () {
-                try {
-                    if (that.err) {
-                        return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
-                    }
-
-                    if (that.orderByPQ.size() === 0) {
-                        return callback(undefined, undefined, that._getAndResetActiveResponseHeaders());
-                    }
-                    var targetPartitionRangeDocumentProducer = that.orderByPQ.peek();
-                    targetPartitionRangeDocumentProducer.current(callback);
-                } finally {
-                    that.sem.leave();
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (self.err) {
+                    reject({ error: self.err, item: undefined });
+                } else {
+                    self.sem.take(function () {
+                        try {
+                            if (self.err) {
+                                reject({ error: self.err, item: undefined, headers: self._getAndResetActiveResponseHeaders() });
+                            } else if (self.orderByPQ.size() === 0) {
+                                resolve({ error: undefined, item: undefined, headers: self._getAndResetActiveResponseHeaders() });
+                            } else {
+                                var targetPartitionRangeDocumentProducer = self.orderByPQ.peek();
+                                targetPartitionRangeDocumentProducer.current().then(resolve, reject);
+                            }
+                        } finally {
+                            self.sem.leave();
+                        }
+                    });
                 }
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function currentSuccess(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    },
+                    function currentFailure(currentHash) {
+                        callback(currentHash.error, currentHash.item, currentHash.headers);
+                    }
+                );
+            }
         },
 
         /**

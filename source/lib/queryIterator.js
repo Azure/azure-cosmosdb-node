@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -102,9 +102,24 @@ var QueryIterator = Base.defineClass(
          * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
          */
         toArray: function (callback) {
-            this.reset();
-            this.toArrayTempResources = [];
-            this._toArrayImplementation(callback);
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.reset();
+                self.toArrayTempResources = [];
+                self._toArrayImplementation().then(resolve, reject);
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function toArraySuccess(toArrayHash) {
+                        callback(toArrayHash.error, toArrayHash.list, toArrayHash.headers);
+                    },
+                    function toArrayFailure(toArrayHash) {
+                        callback(toArrayHash.error, toArrayHash.list, toArrayHash.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -113,14 +128,30 @@ var QueryIterator = Base.defineClass(
          * @instance
          * @param {callback} callback - Function execute on the feed response, takes two parameters error, resourcesList
          */
-        executeNext: function(callback) {
-            this.queryExecutionContext.fetchMore(function(err, resources, responseHeaders) {
-                if(err) {
-                    return callback(err, undefined, responseHeaders);
-                }
-
-                callback(undefined, resources, responseHeaders);
+        executeNext: function (callback) {
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.queryExecutionContext.fetchMore().then(
+                    function (response) {
+                        resolve({ error: undefined, list: response.list, headers: response.headers });
+                    },
+                    function (err, resources, responseHeaders) {
+                        reject({ error: rejection.error, list: undefined, headers: rejection.headers });
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function executeNextSuccess(executeNextHash) {
+                        callback(executeNextHash.error, executeNextHash.list, executeNextHash.headers);
+                    },
+                    function executeNextFailure(executeNextHash) {
+                        callback(executeNextHash.error, executeNextHash.list, executeNextHash.headers);
+                    }
+                );
+            }
         },
 
         /**
@@ -134,25 +165,38 @@ var QueryIterator = Base.defineClass(
 
         /** @ignore */
         _toArrayImplementation: function(callback){
-            var that = this;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                self.queryExecutionContext.nextItem().then(
+                    function (response) {
+                        // concatinate the results and fetch more
+                        self.toArrayLastResHeaders = response.headers;
 
-            this.queryExecutionContext.nextItem(function (err, resource, headers) {
-
-                if (err) {
-                    return callback(err, undefined, headers);
-                }
-                // concatinate the results and fetch more
-                that.toArrayLastResHeaders = headers;
-
-                if (resource === undefined) {
-                
-                    // no more results
-                    return callback(undefined, that.toArrayTempResources, that.toArrayLastResHeaders);
-                } 
-
-                that.toArrayTempResources = that.toArrayTempResources.concat(resource);
-                that._toArrayImplementation(callback);
+                        if (response.item === undefined) {
+                            // no more results
+                            resolve({ error: undefined, list: self.toArrayTempResources, headers: self.toArrayLastResHeaders });
+                        } else {
+                            self.toArrayTempResources = self.toArrayTempResources.concat(response.item);
+                            self._toArrayImplementation().then(resolve, reject);
+                        }
+                    },
+                    function (rejection) {
+                        reject({ error: rejection.error, list: undefined, headers: rejection.headers });
+                    }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function _toArrayImplementationSuccess(_toArrayImplementationHash) {
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
+                    },
+                    function _toArrayImplementationFailure(_toArrayImplementationHash) {
+                        callback(_toArrayImplementationHash.error, _toArrayImplementationHash.list, _toArrayImplementationHash.headers);
+                    }
+                );
+            }
         },
 
         /** @ignore */

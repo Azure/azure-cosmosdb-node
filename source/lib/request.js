@@ -1,4 +1,4 @@
-/*
+﻿/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -148,50 +148,65 @@ var RequestHandler = {
      * @param {function} callback - the callback that will be called when the response is retrieved and processed.
     */
     request: function (globalEndpointManager, connectionPolicy, method, url, path, data, queryParams, headers, callback) {
-        var body;
-        
-        if (data) {
-            body = bodyFromData(data);
-            if (!body) return callback({ message: "parameter data must be a javascript object, string, Buffer, or stream" });
-        }
-        
-        var buffer;
-        var stream;
-        if (body) {
-            if (Buffer.isBuffer(body)) {
-                buffer = body;
-            } else if (body.pipe) {
-                // it is a stream
-                stream = body;
-            } else if (typeof body === "string") {
-                buffer = new Buffer(body, "utf8");
-            } else {
-                callback({ message: "body must be string, Buffer, or stream" });
+        var self = this;
+        var promise = new Promise(function (resolve, reject) {
+            var body;
+
+            if (data) {
+                body = bodyFromData(data);
+                if (!body) return callback({ message: "parameter data must be a javascript object, string, Buffer, or stream" });
             }
-        }
-        
-        var requestOptions = parse(url);
-        requestOptions.method = method;
-        requestOptions.path = path;
-        requestOptions.headers = headers;
-        requestOptions.agent = keepAliveAgent;
-        requestOptions.secureProtocol = "TLSv1_client_method";
 
-        if (connectionPolicy.DisableSSLVerification === true) {
-            requestOptions.rejectUnauthorized = false;
-        }
+            var buffer;
+            var stream;
+            if (body) {
+                if (Buffer.isBuffer(body)) {
+                    buffer = body;
+                } else if (body.pipe) {
+                    // it is a stream
+                    stream = body;
+                } else if (typeof body === "string") {
+                    buffer = new Buffer(body, "utf8");
+                } else {
+                    reject({ message: "body must be string, Buffer, or stream" });
+                }
+            }
 
-        if (queryParams) {
-            requestOptions.path += "?" + querystring.stringify(queryParams);
-        }
-        
-        if (buffer) {
-            requestOptions.headers[Constants.HttpHeaders.ContentLength] = buffer.length;
-            RetryUtility.execute(globalEndpointManager, { buffer: buffer, stream: null }, this._createRequestObjectStub, connectionPolicy, requestOptions, callback);
-        } else if (stream) {
-            RetryUtility.execute(globalEndpointManager, { buffer: null, stream: stream }, this._createRequestObjectStub, connectionPolicy, requestOptions, callback);
+            var requestOptions = parse(url);
+            requestOptions.method = method;
+            requestOptions.path = path;
+            requestOptions.headers = headers;
+            requestOptions.agent = keepAliveAgent;
+            requestOptions.secureProtocol = "TLSv1_client_method";
+
+            if (connectionPolicy.DisableSSLVerification === true) {
+                requestOptions.rejectUnauthorized = false;
+            }
+
+            if (queryParams) {
+                requestOptions.path += "?" + querystring.stringify(queryParams);
+            }
+
+            if (buffer) {
+                requestOptions.headers[Constants.HttpHeaders.ContentLength] = buffer.length;
+                RetryUtility.execute(globalEndpointManager, { buffer: buffer, stream: null }, self._createRequestObjectStub, connectionPolicy, requestOptions).then(resolve, reject);
+            } else if (stream) {
+                RetryUtility.execute(globalEndpointManager, { buffer: null, stream: stream }, self._createRequestObjectStub, connectionPolicy, requestOptions).then(resolve, reject);
+            } else {
+                RetryUtility.execute(globalEndpointManager, { buffer: null, stream: null }, self._createRequestObjectStub, connectionPolicy, requestOptions).then(resolve, reject);
+            }
+        });
+        if (!callback) {
+            return promise;
         } else {
-            RetryUtility.execute(globalEndpointManager, { buffer: null, stream: null }, this._createRequestObjectStub, connectionPolicy, requestOptions, callback);
+            promise.then(
+                function requestSuccess(requestHash) {
+                    callback(requestHash.error, requestHash.response, requestHash.headers);
+                },
+                function requestFailure(requestHash) {
+                    callback(requestHash.error, requestHash.response, requestHash.headers);
+                }
+            );
         }
     }
 }

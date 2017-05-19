@@ -139,21 +139,35 @@ describe("NodeJS Aggregate Query Tests", function () {
     };
 
     var bulkInsertDocuments = function (client, isNameBased, db, collection, documents, callback) {
-        var returnedDocuments = [];
-        var insertDocument = function (currentIndex) {
-            if (currentIndex >= documents.length) {
-                callback(returnedDocuments);
-            }
-            else {
-                client.createDocument(getCollectionLink(isNameBased, db, collection), documents[currentIndex], function (err, document) {
-                    assert.equal(err, undefined, "error creating document " + JSON.stringify(documents[currentIndex]) + ", err: " + err);
-                    returnedDocuments.push(document);
-                    insertDocument(++currentIndex);
-                });
-            }
-        };
+        var promise = new Promise(function (resolve, reject) {
+            var returnedDocuments = [];
+            var insertDocument = function (currentIndex) {
+                if (currentIndex >= documents.length) {
+                    resolve(returnedDocuments);
+                }
+                else {
+                    client.createDocument(getCollectionLink(isNameBased, db, collection), documents[currentIndex], function (err, document) {
+                        assert.equal(err, undefined, "error creating document " + JSON.stringify(documents[currentIndex]) + ", err: " + err);
+                        returnedDocuments.push(document);
+                        insertDocument(++currentIndex);
+                    });
+                }
+            };
 
-        insertDocument(0);
+            insertDocument(0);
+        });
+        if (!callback) {
+            return promise;
+        } else {
+            promise.then(
+                function bulkInsertDocumentsSuccess(bulkInsertDocumentsHash) {
+                    callback(bulkInsertDocumentsHash.error, bulkInsertDocumentsHash.response, bulkInsertDocumentsHash.headers);
+                },
+                function bulkInsertDocumentsFailure(bulkInsertDocumentsHash) {
+                    callback(bulkInsertDocumentsHash.error, bulkInsertDocumentsHash.response, bulkInsertDocumentsHash.headers);
+                }
+            );
+        }
     };
 
     describe("Validate Aggregate Document Query", function () {
@@ -169,10 +183,11 @@ describe("NodeJS Aggregate Query Tests", function () {
                 return createDatabase(function () {
                     return createCollection(
                         function () {
-                            bulkInsertDocuments(client, isNameBased, db, collection, documentDefinitions,
+                            bulkInsertDocuments(client, isNameBased, db, collection, documentDefinitions).then(
                                 function (insertedDocs) {
                                     return done();
-                                });
+                                }
+                            );
                         }
                     );
                 });

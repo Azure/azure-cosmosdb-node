@@ -58,12 +58,24 @@ var GlobalEndpointManager = Base.defineClass(
          * @param {function} callback        - The callback function which takes readEndpoint(string) as an argument.
         */
         getReadEndpoint: function (callback) {
-            if (!this.isEndpointCacheInitialized) {
-                this.refreshEndpointList(function (writeEndpoint, readEndpoint) {
-                    callback(readEndpoint);
-                });
+            var self = this;
+            var promise = new Promise(function (resolve) {
+                if (!self.isEndpointCacheInitialized) {
+                    self.refreshEndpointList().then(
+                        function (response) {
+                            resolve({ readEndpoint: response.readEndpoint });
+                        }
+                    );
+                } else {
+                    resolve({ readEndpoint: self._readEndpoint });
+                }
+            });
+            if (!callback) {
+                return promise;
             } else {
-                callback(this._readEndpoint);
+                promise.then(function getReadEndpointSuccess(getReadEndpointHash) {
+                    callback(getReadEndpointHash.readEndpoint);
+                });
             }
         },
         
@@ -82,12 +94,22 @@ var GlobalEndpointManager = Base.defineClass(
          * @param {function} callback        - The callback function which takes writeEndpoint(string) as an argument.
         */
         getWriteEndpoint: function (callback) {
-            if (!this.isEndpointCacheInitialized) {
-                this.refreshEndpointList(function (writeEndpoint, readEndpoint) {
-                    callback(writeEndpoint);
-                });
+            var self = this;
+            var promise = new Promise(function (resolve) {
+                if (!self.isEndpointCacheInitialized) {
+                    self.refreshEndpointList(function (writeEndpoint, readEndpoint) {
+                        resolve({ writeEndpoint: response.writeEndpoint });
+                    });
+                } else {
+                    resolve({ writeEndpoint: self._writeEndpoint });
+                }
+            });
+            if (!callback) {
+                return promise;
             } else {
-                callback(this._writeEndpoint);
+                promise.then(function getWriteEndpointSuccess(getWriteEndpointHash) {
+                    callback(getWriteEndpointHash.writeEndpoint);
+                });
             }
         },
         
@@ -112,24 +134,33 @@ var GlobalEndpointManager = Base.defineClass(
             var readableLocations = [];
             var databaseAccount;
             
-            var that = this;
-            if (this.enableEndpointDiscovery) {
-                this._getDatabaseAccount(function (databaseAccount) {
-                    if (databaseAccount) {
-                        writableLocations = databaseAccount.WritableLocations;
-                        readableLocations = databaseAccount.ReadableLocations;
-                    }
+            var self = this;
+            var promise = new Promise(function (resolve) {
+                if (self.enableEndpointDiscovery) {
+                    self._getDatabaseAccount(function (databaseAccount) {
+                        if (databaseAccount) {
+                            writableLocations = databaseAccount.WritableLocations;
+                            readableLocations = databaseAccount.ReadableLocations;
+                        }
                     
-                    // Read and Write endpoints will be initialized to default endpoint if we were not able to get the database account info
-                    that._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
-                        that._writeEndpoint = endpoints[0];
-                        that._readEndpoint = endpoints[1];
-                        that.isEndpointCacheInitialized = true;
-                        callback(that._writeEndpoint, that._readEndpoint);
+                        // Read and Write endpoints will be initialized to default endpoint if we were not able to get the database account info
+                        self._updateLocationsCache(writableLocations, readableLocations, function (endpoints) {
+                            self._writeEndpoint = endpoints[0];
+                            self._readEndpoint = endpoints[1];
+                            self.isEndpointCacheInitialized = true;
+                            resolve({ writeEndpoint: self._writeEndpoint, readEndpoint: self._readEndpoint });
+                        });
                     });
-                });
+                } else {
+                    resolve({ writeEndpoint: self._writeEndpoint, readEndpoint: self._readEndpoint });
+                }
+            });
+            if (!callback) {
+                return promise;
             } else {
-                callback(that._writeEndpoint, that._readEndpoint);
+                promise.then(function refreshEndpointListSuccess(refreshEndpointListHash) {
+                    callback(refreshEndpointListHash.writeEndpoint, refreshEndpointListHash.readEndpoint);
+                });
             }
         },
         
@@ -141,35 +172,48 @@ var GlobalEndpointManager = Base.defineClass(
          * @param {function} callback        - The callback function which takes databaseAccount(object) as an argument.
         */
         _getDatabaseAccount: function (callback) {
-            var that = this;
-            var options = { urlConnection: this.defaultEndpoint };
-            this.client.getDatabaseAccount(options, function (err, databaseAccount) {
-                // If for any reason(non - globaldb related), we are not able to get the database account from the above call to getDatabaseAccount,
-                // we would try to get this information from any of the preferred locations that the user might have specified(by creating a locational endpoint)
-                // and keeping eating the exception until we get the database account and return None at the end, if we are not able to get that info from any endpoints
-
-                if (err) {
-                    var func = function (defaultEndpoint, preferredLocations, index) {
-                        if (index < preferredLocations.length) {
-                            var locationalEndpoint = that._getLocationalEndpoint(defaultEndpoint, preferredLocations[index]);
-                            var options = { urlConnection: locationalEndpoint };
-                            that.client.getDatabaseAccount(options, function (err, databaseAccount) {
-                                if (err) {
-                                    func(defaultEndpoint, preferredLocations, index + 1);
-                                } else {
-                                    return callback(databaseAccount);
-                                }
-                            });
-                        } else {
-                            return callback(null);
-                        }
+            var self = this;
+            var options = { urlConnection: self.defaultEndpoint };
+            var promise = new Promise(function (resolve, reject) {
+                self.client.getDatabaseAccount(options).then(
+                    function (response) {
+                        resolve({ databaseAccount: response.databaseAccount });
+                    },
+                    function (rejection) {
+                        // If for any reason(non - globaldb related), we are not able to get the database account from the above call to getDatabaseAccount,
+                        // we would try to get this information from any of the preferred locations that the user might have specified(by creating a locational endpoint)
+                        // and keeping eating the exception until we get the database account and return None at the end, if we are not able to get that info from any endpoints
+                        var func = function (defaultEndpoint, preferredLocations, index) {
+                            if (index < preferredLocations.length) {
+                                var locationalEndpoint = self._getLocationalEndpoint(defaultEndpoint, preferredLocations[index]);
+                                var options = { urlConnection: locationalEndpoint };
+                                self.client.getDatabaseAccount(options, function (err, databaseAccount) {
+                                    if (err) {
+                                        func(defaultEndpoint, preferredLocations, index + 1);
+                                    } else {
+                                        resolve({ databaseAccount: databaseAccount });
+                                    }
+                                });
+                            } else {
+                                reject({ databaseAccount: null });
+                            }
+                        };
+                        func(self.defaultEndpoint, self.preferredLocations, 0);
                     }
-                    func(that.defaultEndpoint, that.preferredLocations, 0);
-
-                } else {
-                    return callback(databaseAccount);
-                }
+                );
             });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function _getDatabaseAccountSuccess(_getDatabaseAccountHash) {
+                        callback(_getDatabaseAccountHash.databaseAccount);
+                    },
+                    function _getDatabaseAccountFailure(_getDatabaseAccountHash) {
+                        callback(_getDatabaseAccountHash.databaseAccount);
+                    }
+                );
+            }
         },
 
         /** Gets the locational endpoint using the location name passed to it using the default endpoint.

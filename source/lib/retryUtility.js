@@ -40,12 +40,28 @@ var RetryUtility = {
     * @param {function} callback - the callback that will be called when the request is finished executing.
     */
     execute: function (globalEndpointManager, body, createRequestObjectFunc, connectionPolicy, requestOptions, callback) {
+        var self = this;
         var endpointDiscoveryRetryPolicy = new EndpointDiscoveryRetryPolicy(globalEndpointManager);
         var resourceThrottleRetryPolicy = new ResourceThrottleRetryPolicy(connectionPolicy.RetryOptions.MaxRetryAttemptCount, 
                                                 connectionPolicy.RetryOptions.FixedRetryIntervalInMilliseconds,
                                                 connectionPolicy.RetryOptions.MaxWaitTimeInSeconds);
 
-        this.apply(body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy, callback);
+        var promise = new Promise(function (resolve, reject) {
+            self.apply(body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy).then(resolve, reject);
+        });
+        if (!callback) {
+            return promise;
+        } else {
+            promise.then(
+                //TODO
+                function executeSuccess(executeHash) {
+                    callback(executeHash.error);
+                },
+                function executeFailure(executeHash) {
+                    callback(executeHash.error);
+                }
+            );
+        }
     },
     
     /**
@@ -59,46 +75,62 @@ var RetryUtility = {
     * @param {function} callback - the callback that will be called when the response is retrieved and processed.
     */
     apply: function (body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy, callback) {
-        var that = this;
-        var httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, function (err, response, headers) {
-            if (err) {
-                var retryPolicy = null;
-                headers = headers || {};
-                if (err.code === EndpointDiscoveryRetryPolicy.FORBIDDEN_STATUS_CODE && err.substatus === EndpointDiscoveryRetryPolicy.WRITE_FORBIDDEN_SUB_STATUS_CODE) {
-                    retryPolicy = endpointDiscoveryRetryPolicy;
-                } else if (err.code === ResourceThrottleRetryPolicy.THROTTLE_STATUS_CODE) {
-                    retryPolicy = resourceThrottleRetryPolicy;
+        var self = this;
+        var promise = new Promise(function (resolve, reject) {
+            var httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, function (err, httpResponse, headers) {
+                if (err) {
+                    var retryPolicy = null;
+                    headers = headers || {};
+                    if (err.code === EndpointDiscoveryRetryPolicy.FORBIDDEN_STATUS_CODE && err.substatus === EndpointDiscoveryRetryPolicy.WRITE_FORBIDDEN_SUB_STATUS_CODE) {
+                        retryPolicy = endpointDiscoveryRetryPolicy;
+                    } else if (err.code === ResourceThrottleRetryPolicy.THROTTLE_STATUS_CODE) {
+                        retryPolicy = resourceThrottleRetryPolicy;
+                    }
+                    if (retryPolicy) {
+                        retryPolicy.shouldRetry(err).then(
+                            function (shouldRetry) {
+                                setTimeout(function () {
+                                    self.apply(body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy).then(resolve, reject);
+                                }, retryPolicy.retryAfterInMilliseconds);
+                            },
+                            function (shouldRetry) {
+                                headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
+                                headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
+                                //TODO reject?
+                                reject({ error: err, response: httpResponse, headers: headers });
+                            }
+                        );
+                    }
+                    //TODO else?
+                } else {
+                    headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
+                    headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
+                    resolve({ error: err, response: httpResponse, headers: headers });
                 }
-                if (retryPolicy) {
-                    retryPolicy.shouldRetry(err, function (shouldRetry) {
-                        if (!shouldRetry) {
-                            headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
-                            headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                            return callback(err, response, headers);
-                        } else {
-                            setTimeout(function () {
-                                that.apply(body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy, callback);
-                            }, retryPolicy.retryAfterInMilliseconds);
-                            return;
-                        }
-                    });
-                    return;
-                }
-            }
-            headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
-            headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-            return callback(err, response, headers);
-        });
+            });
         
-        if (httpsRequest) {
-            if (body["stream"] !== null) {
-                body["stream"].pipe(httpsRequest);
-            } else if (body["buffer"] !== null) {
-                httpsRequest.write(body["buffer"]);
-                httpsRequest.end();
-            } else {
-                httpsRequest.end();
+            if (httpsRequest) {
+                if (body["stream"] !== null) {
+                    body["stream"].pipe(httpsRequest);
+                } else if (body["buffer"] !== null) {
+                    httpsRequest.write(body["buffer"]);
+                    httpsRequest.end();
+                } else {
+                    httpsRequest.end();
+                }
             }
+        });
+        if (!callback) {
+            return promise;
+        } else {
+            promise.then(
+                function applySuccess(applyHash) {
+                    callback(applyHash.error, applyHash.response, applyHash.headers);
+                },
+                function applyFailure(applyHash) {
+                    callback(applyHash.error, applyHash.response, applyHash.headers);
+                }
+            );
         }
     }
 }

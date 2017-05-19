@@ -51,20 +51,38 @@ var EndpointDiscoveryRetryPolicy = Base.defineClass(
          * @param {function} callback - The callback function which takes bool argument which specifies whether the request will be retried or not.
         */
         shouldRetry: function (err, callback) {
-            if (err) {
-                if (this.currentRetryAttemptCount < this._maxRetryAttemptCount && this.globalEndpointManager.enableEndpointDiscovery) {
-                    this.currentRetryAttemptCount++;
-                    console.log("Write region was changed, refreshing the regions list from database account and will retry the request.");
-                    var that = this;
-                    this.globalEndpointManager.refreshEndpointList(function (writeEndpoint, readEndpoint) {
-                        that.globalEndpointManager.setWriteEndpoint(writeEndpoint);
-                        that.globalEndpointManager.setReadEndpoint(readEndpoint);
-                        callback(true);
-                    });
-                    return;
+            var promise = new Promise(function (resolve, reject) {
+                if (err) {
+                    if (this.currentRetryAttemptCount < this._maxRetryAttemptCount && this.globalEndpointManager.enableEndpointDiscovery) {
+                        this.currentRetryAttemptCount++;
+                        console.log("Write region was changed, refreshing the regions list from database account and will retry the request.");
+                        var that = this;
+                        this.globalEndpointManager.refreshEndpointList().then(
+                            function (writeEndpoint, readEndpoint) {
+                                that.globalEndpointManager.setWriteEndpoint(writeEndpoint);
+                                that.globalEndpointManager.setReadEndpoint(readEndpoint);
+                                resolve(true);
+                            }
+                        );
+                    } else {
+                        reject(false);
+                    }
+                } else {
+                    reject(false);
                 }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function shouldRetrySuccess(shouldRetry) {
+                        callback(shouldRetry);
+                    },
+                    function shouldRetryFailure(shouldRetry) {
+                        callback(shouldRetry);
+                    }
+                );
             }
-            return callback(false);
         }
     },
     {

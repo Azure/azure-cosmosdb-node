@@ -55,24 +55,44 @@ var ResourceThrottleRetryPolicy = Base.defineClass(
          * @param {function} callback - The callback function which takes bool argument which specifies whether the request will be retried or not.
         */
         shouldRetry: function (err, callback) {
-            if (err) {
-                if (this.currentRetryAttemptCount < this._maxRetryAttemptCount) {
-                    this.currentRetryAttemptCount++;
-                    this.retryAfterInMilliseconds = 0;
+            var self = this;
+            var promise = new Promise(function (resolve, reject) {
+                if (err) {
+                    if (self.currentRetryAttemptCount < self._maxRetryAttemptCount) {
+                        self.currentRetryAttemptCount++;
+                        self.retryAfterInMilliseconds = 0;
 
-                    if (this._fixedRetryIntervalInMilliseconds) {
-                        this.retryAfterInMilliseconds = this._fixedRetryIntervalInMilliseconds;
-                    } else if (err.retryAfterInMilliseconds) {
-                        this.retryAfterInMilliseconds = err.retryAfterInMilliseconds;
+                        if (self._fixedRetryIntervalInMilliseconds) {
+                            self.retryAfterInMilliseconds = self._fixedRetryIntervalInMilliseconds;
+                        } else if (err.retryAfterInMilliseconds) {
+                            self.retryAfterInMilliseconds = err.retryAfterInMilliseconds;
+                        }
+
+                        if (self.cummulativeWaitTimeinMilliseconds < self._maxWaitTimeInMilliseconds) {
+                            self.cummulativeWaitTimeinMilliseconds += self.retryAfterInMilliseconds;
+                            resolve(true);
+                        } else {
+                            reject(false);
+                        }
+                    } else {
+                        reject(false);
                     }
-    
-                    if (this.cummulativeWaitTimeinMilliseconds < this._maxWaitTimeInMilliseconds) {
-                        this.cummulativeWaitTimeinMilliseconds += this.retryAfterInMilliseconds;
-                        return callback(true);
-                    }
+                } else {
+                    reject(false);
                 }
+            });
+            if (!callback) {
+                return promise;
+            } else {
+                promise.then(
+                    function shouldRetrySuccess(shouldRetry) {
+                        callback(shouldRetry);
+                    },
+                    function shouldRetryFailure(shouldRetry) {
+                        callback(shouldRetry);
+                    }
+                );
             }
-            return callback(false);
         }
     },
     {
