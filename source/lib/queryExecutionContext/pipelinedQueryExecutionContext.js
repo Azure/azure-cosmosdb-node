@@ -84,11 +84,11 @@ var PipelinedQueryExecutionContext = Base.defineClass(
                 // otherwise use the default implementation
                 if (typeof this.endpoint.fetchMore === 'function') {
                     // cannot "promisify" 'fetchMore' because it already returns a Boolean (primitive)
-                    self.endpoint.fetchMore(function(error, items, headers) {
+                    self.endpoint.fetchMore(function(error, list, headers) {
                         if (error) {
-                            reject({error:error, items:items, headers:headers});
+                            reject({error:error, list:list, headers:headers});
                         } else {
-                            resolve({error:error, items:items, headers:headers});
+                            resolve({error:error, list:list, headers:headers});
                         }
                     });
                 } else {
@@ -102,10 +102,10 @@ var PipelinedQueryExecutionContext = Base.defineClass(
             } else {
                 promise.then(
                     function fetchMoreSuccess(fetchMoreHash) {
-                        callback(fetchMoreHash.error, fetchMoreHash.items, fetchMoreHash.headers);
+                        callback(fetchMoreHash.error, fetchMoreHash.list, fetchMoreHash.headers);
                     },
                     function fetchMoreFailure(fetchMoreHash) {
-                        callback(fetchMoreHash.error, fetchMoreHash.items, fetchMoreHash.headers);
+                        callback(fetchMoreHash.error, fetchMoreHash.list, fetchMoreHash.headers);
                     }
                 );
             }
@@ -119,24 +119,24 @@ var PipelinedQueryExecutionContext = Base.defineClass(
                         HeaderUtils.mergeHeaders(self._fetchMoreRespHeaders, response.headers);
                         // concatinate the results and fetch more
                         self._fetchMoreLastResHeaders = response.headers;
-                        if (response.items === undefined) {
+                        if (response.list === undefined) {
                             // no more results
                             if (self._fetchMoreTempBufferedResults.length === 0) {
-                                resolve({error:undefined, items:undefined, headers:self._fetchMoreRespHeaders});
+                                resolve({error:undefined, list:undefined, headers:self._fetchMoreRespHeaders});
                             } else {
                                 var temp = self._fetchMoreTempBufferedResults;
                                 self._fetchMoreTempBufferedResults = [];
-                                resolve({error:undefined, items:temp, headers:self._fetchMoreRespHeaders});
+                                resolve({error:undefined, list:temp, headers:self._fetchMoreRespHeaders});
                             }
                         } else {
-                            self._fetchMoreTempBufferedResults = self._fetchMoreTempBufferedResults.concat(response.items);
+                            self._fetchMoreTempBufferedResults = self._fetchMoreTempBufferedResults.concat(response.list);
 
                             if (self.pageSize <= self._fetchMoreTempBufferedResults.length) {
                                 // fetched enough results
                                 var temp = self._fetchMoreTempBufferedResults;
                                 self._fetchMoreTempBufferedResults = [];
 
-                                resolve({error:undefined, items:temp, headers:self._fetchMoreRespHeaders});
+                                resolve({error:undefined, list:temp, headers:self._fetchMoreRespHeaders});
                             } else {
                                 self._fetchMoreImplementation.then(resolve, reject);
                             }
@@ -144,7 +144,7 @@ var PipelinedQueryExecutionContext = Base.defineClass(
                     },
                     function (rejection) {
                         HeaderUtils.mergeHeaders(self._fetchMoreRespHeaders, rejection.headers);
-                        reject({error:rejection.error, items:undefined, headers:self._fetchMoreRespHeaders);
+                        reject({error:rejection.error, list:undefined, headers:self._fetchMoreRespHeaders);
                     }
                 );
             });
@@ -153,10 +153,10 @@ var PipelinedQueryExecutionContext = Base.defineClass(
             } else {
                 promise.then(
                     function _fetchMoreImplementationSuccess(_fetchMoreImplementationHash) {
-                        callback(_fetchMoreImplementationHash.error, _fetchMoreImplementationHash.items, _fetchMoreImplementationHash.headers);
+                        callback(_fetchMoreImplementationHash.error, _fetchMoreImplementationHash.list, _fetchMoreImplementationHash.headers);
                     },
                     function _fetchMoreImplementationFailure(_fetchMoreImplementationHash) {
-                        callback(_fetchMoreImplementationHash.error, _fetchMoreImplementationHash.items, _fetchMoreImplementationHash.headers);
+                        callback(_fetchMoreImplementationHash.error, _fetchMoreImplementationHash.list, _fetchMoreImplementationHash.headers);
                     }
                 );
             }
