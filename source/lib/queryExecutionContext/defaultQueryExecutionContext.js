@@ -74,10 +74,10 @@ var DefaultQueryExecutionContext = Base.defineClass(
             } else {
                 promise.then(
                     function nextItemSuccess(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.items, nextItemHash.headers);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     },
                     function nextItemFailure(nextItemHash) {
-                        callback(nextItemHash.error, nextItemHash.items, nextItemHash.headers);
+                        callback(nextItemHash.error, nextItemHash.item, nextItemHash.headers);
                     }
                 );
             }
@@ -153,7 +153,7 @@ var DefaultQueryExecutionContext = Base.defineClass(
             var self = this;
             var promise = new Promise(function (resolve, reject) {
                 if (self.currentPartitionIndex >= self.fetchFunctions.length) {
-                    resolve({ error: undefined, items: undefined, headers: undefined });
+                    resolve({ error: undefined, list: undefined, headers: undefined });
                 } else {
                     // Keep to the original continuation and to restore the value after fetchFunction call
                     var originalContinuation = self.options.continuation;
@@ -161,13 +161,13 @@ var DefaultQueryExecutionContext = Base.defineClass(
 
                     // Return undefined if there is no more results
                     if (self.currentPartitionIndex >= self.fetchFunctions.length) {
-                        resolve({ error: undefined, items: undefined, headers: undefined });
+                        resolve({ error: undefined, list: undefined, headers: undefined });
                     } else {
                         var fetchFunction = self.fetchFunctions[self.currentPartitionIndex];
                         fetchFunction(self.options, function (err, resources, responseHeaders) {
                             if (err) {
                                 self.state = DefaultQueryExecutionContext.STATES.ended;
-                                reject({ error: err, items: undefined, headers: responseHeaders });
+                                reject({ error: err, list: undefined, headers: responseHeaders });
                             } else {
                                 self.continuation = responseHeaders[Constants.HttpHeaders.Continuation];
                                 if (!self.continuation) {
@@ -177,7 +177,7 @@ var DefaultQueryExecutionContext = Base.defineClass(
                                 self.state = DefaultQueryExecutionContext.STATES.inProgress;
                                 self.currentIndex = 0;
                                 self.options.continuation = originalContinuation;
-                                resolve({ error: undefined, items: resources, headers: responseHeaders });
+                                resolve({ error: undefined, list: resources, headers: responseHeaders });
                             }
                         });
                     }
@@ -188,10 +188,10 @@ var DefaultQueryExecutionContext = Base.defineClass(
             } else {
                 promise.then(
                     function fetchMoreSuccess(fetchMoreHash) {
-                        callback(fetchMoreHash.error, fetchMoreHash.items, fetchMoreHash.headers);
+                        callback(fetchMoreHash.error, fetchMoreHash.list, fetchMoreHash.headers);
                     },
                     function fetchMoreFailure(fetchMoreHash) {
-                        callback(fetchMoreHash.error, fetchMoreHash.items, fetchMoreHash.headers);
+                        callback(fetchMoreHash.error, fetchMoreHash.list, fetchMoreHash.headers);
                     }
                 );
             }
