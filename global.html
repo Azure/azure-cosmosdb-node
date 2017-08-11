@@ -87,7 +87,9 @@
 
     
 
-     
+    
+
+    
 
     
 
@@ -2116,7 +2118,9 @@
 
     
 
+    
     <h4 class="name" id="createAttachmentUri"><span class="type-signature"></span>createAttachmentUri<span class="signature">(databaseId, collectionId, documentId, attachmentId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
     <p class="summary">Given a database, collection and conflict id, this creates a conflict link.</p>
@@ -2335,12 +2339,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createConflictUri"><span class="type-signature"></span>createConflictUri<span class="signature">(databaseId, collectionId, conflictId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
     <p class="summary">Given a database, collection and conflict id, this creates a conflict link.</p>
@@ -2536,12 +2544,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createDatabaseUri"><span class="type-signature"></span>createDatabaseUri<span class="signature">(databaseId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -2689,12 +2701,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createDocumentCollectionUri"><span class="type-signature"></span>createDocumentCollectionUri<span class="signature">(databaseId, collectionId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -2865,12 +2881,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createDocumentUri"><span class="type-signature"></span>createDocumentUri<span class="signature">(databaseId, collectionId, documentId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -3064,12 +3084,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createPartitionKeyRangesUri"><span class="type-signature"></span>createPartitionKeyRangesUri<span class="signature">(databaseId, collectionId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
     <p class="summary">Given a database and collection, this creates a partition key ranges link in the Azure DocumentDB database service.</p>
@@ -3238,12 +3262,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createPermissionUri"><span class="type-signature"></span>createPermissionUri<span class="signature">(databaseId, userId, permissionId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -3437,12 +3465,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createStoredProcedureUri"><span class="type-signature"></span>createStoredProcedureUri<span class="signature">(databaseId, collectionId, storedProcedureId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -3636,12 +3668,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createTriggerUri"><span class="type-signature"></span>createTriggerUri<span class="signature">(databaseId, collectionId, triggerId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
     <p class="summary">Given a database, collection and trigger id, this creates a trigger link.</p>
@@ -3837,12 +3873,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createUserDefinedFunctionUri"><span class="type-signature"></span>createUserDefinedFunctionUri<span class="signature">(databaseId, collectionId, udfId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
     <p class="summary">Given a database, collection and udf id, this creates a udf link.</p>
@@ -4038,12 +4078,16 @@
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="createUserUri"><span class="type-signature"></span>createUserUri<span class="signature">(databaseId, userId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
 
     
 
@@ -4214,6 +4258,8 @@
 
 
 
+
+
         
     
 
@@ -4328,7 +4374,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2569">line 2569</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2587">line 2587</a>
     </li></ul></dd>
     
 
@@ -4399,37 +4445,6 @@
 
         <tr>
             
-                <td class="name"><code>maxItemCount</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Max number of items to be returned in the enumeration operation.</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>continuation</code></td>
             
 
@@ -4461,13 +4476,13 @@
 
         <tr>
             
-                <td class="name"><code>sessionToken</code></td>
+                <td class="name"><code>disableRUPerMinuteUsage</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">boolean</span>
 
 
             
@@ -4485,14 +4500,46 @@
 
             
 
-            <td class="description last">Token for use with Session consistency.</td>
+            <td class="description last">DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>EnableScanInQuery</code></td>
+                <td class="name"><code>enableCrossPartitionQuery</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A value indicating whether users are enabled to send more than one request to execute the query in the Azure DocumentDB database service.
+                                                            <p>More than one request is necessary if the query is not scoped to single partition key value.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>enableScanInQuery</code></td>
             
 
             <td class="type">
@@ -4523,13 +4570,13 @@
 
         <tr>
             
-                <td class="name"><code>disableRUPerMinuteUsage</code></td>
+                <td class="name"><code>maxDegreeOfParallelism</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">number</span>
 
 
             
@@ -4547,7 +4594,100 @@
 
             
 
-            <td class="description last">DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.</td>
+            <td class="description last">The maximum number of concurrent operations that run client side during parallel query execution in the Azure DocumentDB database service. Negative values make the system automatically decides the number of concurrent operations to run.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxItemCount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Max number of items to be returned in the enumeration operation.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>partitionKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Specifies a partition key definition for a particular path in the Azure DocumentDB database service.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Token for use with Session consistency.</td>
         </tr>
 
     
@@ -4586,7 +4726,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2496">line 2496</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2510">line 2510</a>
     </li></ul></dd>
     
 
@@ -4733,7 +4873,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2550">line 2550</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2568">line 2568</a>
     </li></ul></dd>
     
 
@@ -4903,7 +5043,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2559">line 2559</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2577">line 2577</a>
     </li></ul></dd>
     
 
@@ -5098,7 +5238,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2538">line 2538</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2556">line 2556</a>
     </li></ul></dd>
     
 
@@ -5275,7 +5415,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2506">line 2506</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2524">line 2524</a>
     </li></ul></dd>
     
 
@@ -5296,7 +5436,9 @@
 
     
 
+    
     <h4 class="name" id="RequestCallback"><span class="type-signature"></span>RequestCallback<span class="signature">(error, resource, responseHeaders)</span><span class="type-signature"></span></h4>
+    
 
     
 
@@ -5514,7 +5656,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2528">line 2528</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2546">line 2546</a>
     </li></ul></dd>
     
 
@@ -5524,6 +5666,8 @@
 
     
 </dl>
+
+
 
 
 
@@ -5591,68 +5735,6 @@
     </thead>
 
     <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>preTriggerInclude</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Indicates what is the pre trigger to be invoked before the operation.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>postTriggerInclude</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Indicates what is the post trigger to be invoked after the operation.</td>
-        </tr>
-
     
 
         <tr>
@@ -5759,37 +5841,6 @@
 
         <tr>
             
-                <td class="name"><code>indexingDirective</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Specifies indexing directives (index, do not index .. etc).</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>consistencyLevel</code></td>
             
 
@@ -5821,7 +5872,69 @@
 
         <tr>
             
-                <td class="name"><code>sessionToken</code></td>
+                <td class="name"><code>disableRUPerMinuteUsage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>enableScriptLogging</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Enables or disables logging in JavaScript stored procedures.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>indexingDirective</code></td>
             
 
             <td class="type">
@@ -5845,7 +5958,224 @@
 
             
 
-            <td class="description last">Token for use with Session consistency.</td>
+            <td class="description last">Specifies indexing directives (index, do not index .. etc).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>offerEnableRUPerMinuteThroughput</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection in the Azure DocumentDB database service.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>offerThroughput</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The offer throughput provisioned for a collection in measurement of Requests-per-Unit in the Azure DocumentDB database service.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>offerType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Offer type when creating document collections.                                                                    <p>This option is only valid when creating a document collection.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>partitionKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Specifies a partition key definition for a particular path in the Azure DocumentDB database service.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>populateQuotaInfo</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Enables/disables getting document collection quota related stats for document collection read requests.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>postTriggerInclude</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Indicates what is the post trigger to be invoked after the operation.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>preTriggerInclude</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Indicates what is the pre trigger to be invoked before the operation.</td>
         </tr>
 
     
@@ -5883,7 +6213,7 @@
 
         <tr>
             
-                <td class="name"><code>offerType</code></td>
+                <td class="name"><code>sessionToken</code></td>
             
 
             <td class="type">
@@ -5907,69 +6237,7 @@
 
             
 
-            <td class="description last">Offer type when creating document collections.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>offerEnableRUPerMinuteThroughput</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection in the Azure DocumentDB database service.                                                                     <p>This option is only valid when creating a document collection.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>disableRUPerMinuteUsage</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.</td>
+            <td class="description last">Token for use with Session consistency.</td>
         </tr>
 
     
@@ -6008,7 +6276,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2478">line 2478</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2488">line 2488</a>
     </li></ul></dd>
     
 
@@ -6155,7 +6423,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2514">line 2514</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2532">line 2532</a>
     </li></ul></dd>
     
 
@@ -6302,7 +6570,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2521">line 2521</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2539">line 2539</a>
     </li></ul></dd>
     
 
@@ -6338,7 +6606,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Tue May 09 2017 22:25:38 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Thu Aug 10 2017 16:52:58 GMT-0700 (Pacific Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
