@@ -277,7 +277,7 @@ var DocumentProducer = Base.defineClass(
                 }
                 
                 if (items === undefined) {
-                    return callback(undefined, undefined, headers);
+                    return callback(undefined, undefined, that._respHeaders);
                 }
                 HeaderUtils.mergeHeaders(that._respHeaders, headers);
                 
