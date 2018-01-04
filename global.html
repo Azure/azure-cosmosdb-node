@@ -293,6 +293,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>ProxyUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Http/Https proxy url</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -328,7 +351,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line284">line 284</a>
+        <a href="documents.js.html">documents.js</a>, <a href="documents.js.html#line285">line 285</a>
     </li></ul></dd>
     
 
@@ -352,7 +375,7 @@
 
 
 <div class="description">
-    <p>Represents the consistency levels supported for DocumentDB client operations.<br>The requested ConsistencyLevel must match or be weaker than that provisioned for the database account. Consistency levels.<br>Consistency levels by order of strength are Strong, BoundedStaleness, Session and Eventual.</p>
+    <p>Represents the consistency levels supported for Azure Cosmos DB client operations.<br>The requested ConsistencyLevel must match or be weaker than that provisioned for the database account. Consistency levels.<br>Consistency levels by order of strength are Strong, BoundedStaleness, Session and Eventual.</p>
 </div>
 
 
@@ -546,7 +569,7 @@
 
 
 <div class="description">
-    Represents a DatabaseAccount in the Azure DocumentDB database service. A DatabaseAccount is the container for databases.
+    Represents a DatabaseAccount in the Azure Cosmos DB database service. A DatabaseAccount is the container for databases.
 </div>
 
 
@@ -1482,7 +1505,7 @@
 
 
 <div class="description">
-    Represents the Retry policy assocated with throttled requests in the Azure DocumentDB database service.
+    Represents the Retry policy assocated with throttled requests in the Azure Cosmos DB database service.
 </div>
 
 
@@ -2129,7 +2152,7 @@
 
 
 <div class="description">
-    Would be used when creating a Conflict in Azure DocumentDB database service.
+    Would be used when creating a Conflict in Azure Cosmos DB database service.
 </div>
 
 
@@ -2357,7 +2380,7 @@
 
 
 <div class="description">
-    Would be used when creating a Conflict in Azure DocumentDB database service.
+    Would be used when creating a Conflict in Azure Cosmos DB database service.
 </div>
 
 
@@ -2560,7 +2583,7 @@
 
 
 <div class="description">
-    Would be used when creating or deleting a DocumentCollection or a User in Azure DocumentDB database service
+    Would be used when creating or deleting a DocumentCollection or a User in Azure Cosmos DB database service
 </div>
 
 
@@ -2717,7 +2740,7 @@
 
 
 <div class="description">
-    Would be used when updating or deleting a DocumentCollection, creating a Document, a StoredProcedure, a Trigger, a UserDefinedFunction, or when executing a query with CreateDocumentQuery in Azure DocumentDB database service.
+    Would be used when updating or deleting a DocumentCollection, creating a Document, a StoredProcedure, a Trigger, a UserDefinedFunction, or when executing a query with CreateDocumentQuery in Azure Cosmos DB database service.
 </div>
 
 
@@ -2897,7 +2920,7 @@
 
 
 <div class="description">
-    Would be used when creating an Attachment, or when replacing or deleting a Document in Azure DocumentDB database service
+    Would be used when creating an Attachment, or when replacing or deleting a Document in Azure Cosmos DB database service
 </div>
 
 
@@ -3096,7 +3119,7 @@
     
 
     
-    <p class="summary">Given a database and collection, this creates a partition key ranges link in the Azure DocumentDB database service.</p>
+    <p class="summary">Given a database and collection, this creates a partition key ranges link in the Azure Cosmos DB database service.</p>
     
 
 
@@ -3278,7 +3301,7 @@
 
 
 <div class="description">
-    Would be used when replacing or deleting a Permission in Azure DocumentDB database service.
+    Would be used when replacing or deleting a Permission in Azure Cosmos DB database service.
 </div>
 
 
@@ -3481,7 +3504,7 @@
 
 
 <div class="description">
-    Would be used when replacing, executing, or deleting a StoredProcedure in Azure DocumentDB database service.
+    Would be used when replacing, executing, or deleting a StoredProcedure in Azure Cosmos DB database service.
 </div>
 
 
@@ -3686,7 +3709,7 @@
 
 
 <div class="description">
-    Would be used when replacing, executing, or deleting a Trigger in Azure DocumentDB database service
+    Would be used when replacing, executing, or deleting a Trigger in Azure Cosmos DB database service
 </div>
 
 
@@ -3891,7 +3914,7 @@
 
 
 <div class="description">
-    Would be used when replacing, executing, or deleting a UserDefinedFunction in Azure DocumentDB database service
+    Would be used when replacing, executing, or deleting a UserDefinedFunction in Azure Cosmos DB database service
 </div>
 
 
@@ -4094,7 +4117,7 @@
 
 
 <div class="description">
-    Would be used when creating a Permission, or when replacing or deleting a User in Azure DocumentDB database service
+    Would be used when creating a Permission, or when replacing or deleting a User in Azure Cosmos DB database service
 </div>
 
 
@@ -4374,7 +4397,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2587">line 2587</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2719">line 2719</a>
     </li></ul></dd>
     
 
@@ -4531,7 +4554,7 @@
 
             
 
-            <td class="description last">A value indicating whether users are enabled to send more than one request to execute the query in the Azure DocumentDB database service.
+            <td class="description last">A value indicating whether users are enabled to send more than one request to execute the query in the Azure Cosmos DB database service.
                                                             <p>More than one request is necessary if the query is not scoped to single partition key value.</p></td>
         </tr>
 
@@ -4594,7 +4617,7 @@
 
             
 
-            <td class="description last">The maximum number of concurrent operations that run client side during parallel query execution in the Azure DocumentDB database service. Negative values make the system automatically decides the number of concurrent operations to run.</td>
+            <td class="description last">The maximum number of concurrent operations that run client side during parallel query execution in the Azure Cosmos DB database service. Negative values make the system automatically decides the number of concurrent operations to run.</td>
         </tr>
 
     
@@ -4656,7 +4679,7 @@
 
             
 
-            <td class="description last">Specifies a partition key definition for a particular path in the Azure DocumentDB database service.</td>
+            <td class="description last">Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.</td>
         </tr>
 
     
@@ -4726,7 +4749,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2510">line 2510</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2642">line 2642</a>
     </li></ul></dd>
     
 
@@ -4873,7 +4896,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2568">line 2568</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2700">line 2700</a>
     </li></ul></dd>
     
 
@@ -5043,7 +5066,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2577">line 2577</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2709">line 2709</a>
     </li></ul></dd>
     
 
@@ -5238,7 +5261,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2556">line 2556</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2688">line 2688</a>
     </li></ul></dd>
     
 
@@ -5415,7 +5438,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2524">line 2524</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2656">line 2656</a>
     </li></ul></dd>
     
 
@@ -5656,7 +5679,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2546">line 2546</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2678">line 2678</a>
     </li></ul></dd>
     
 
@@ -5989,7 +6012,7 @@
 
             
 
-            <td class="description last">Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection in the Azure DocumentDB database service.</td>
+            <td class="description last">Represents Request Units(RU)/Minute throughput is enabled/disabled for a collection in the Azure Cosmos DB database service.</td>
         </tr>
 
     
@@ -6020,7 +6043,7 @@
 
             
 
-            <td class="description last">The offer throughput provisioned for a collection in measurement of Requests-per-Unit in the Azure DocumentDB database service.</td>
+            <td class="description last">The offer throughput provisioned for a collection in measurement of Requests-per-Unit in the Azure Cosmos DB database service.</td>
         </tr>
 
     
@@ -6082,7 +6105,7 @@
 
             
 
-            <td class="description last">Specifies a partition key definition for a particular path in the Azure DocumentDB database service.</td>
+            <td class="description last">Specifies a partition key definition for a particular path in the Azure Cosmos DB database service.</td>
         </tr>
 
     
@@ -6276,7 +6299,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2488">line 2488</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2620">line 2620</a>
     </li></ul></dd>
     
 
@@ -6423,7 +6446,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2532">line 2532</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2664">line 2664</a>
     </li></ul></dd>
     
 
@@ -6570,7 +6593,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2539">line 2539</a>
+        <a href="documentclient.js.html">documentclient.js</a>, <a href="documentclient.js.html#line2671">line 2671</a>
     </li></ul></dd>
     
 
@@ -6606,7 +6629,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Thu Aug 10 2017 16:52:58 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jan 03 2018 16:00:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

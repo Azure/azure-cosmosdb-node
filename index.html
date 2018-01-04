@@ -43,15 +43,16 @@
 
 
     <section>
-        <article><h1>Microsoft Azure DocumentDB Node.js SDK</h1><p><img src="https://img.shields.io/npm/v/documentdb.svg" alt="">
+        <article><h1>Node.js SDK for DocumentDB APIs of Azure Cosmos DB</h1><p><img src="https://img.shields.io/npm/v/documentdb.svg" alt="">
 <img src="https://img.shields.io/npm/dm/documentdb.svg" alt="">
 <img src="https://img.shields.io/github/issues/azure/azure-documentdb-node.svg" alt=""></p>
-<p>This project provides a node module that makes it easy to interact with Azure DocumentDB. </p>
-<p>For documentation please see the Microsoft Azure <a href="http://azure.microsoft.com/en-us/develop/nodejs/">Node.js Developer Center</a> and the <a href="http://azure.github.io/azure-documentdb-node/">Microsoft Azure DocumentDB Node.js SDK Documentation</a>.</p>
+<p>Node.js SDK for DocumentDB APIs for Microsoft Azure Cosmos DB Service.</p>
+<p>This project provides a node module that makes it easy to interact with DocumentDB APIs of Azure Cosmos DB (cosmosdb) Service.</p>
+<p>For documentation please see the Microsoft Azure <a href="http://azure.microsoft.com/en-us/develop/nodejs/">Node.js Developer Center</a> and the <a href="http://azure.github.io/azure-documentdb-node/"> Node.js SDK Documentation</a>.</p>
 <h2>Installation</h2><h3>Core Module</h3><p>The core module uses the callbacks model for responses, exposed through the DocumentClient </p>
-<pre class="prettyprint source"><code>npm install documentdb</code></pre><h2>Usage</h2><p>To use this SDK to call Azure DocumentDB, you need to first <a href="http://azure.microsoft.com/en-us/documentation/articles/documentdb-create-account/">create an account</a>.</p>
-<p>You can follow this <a href="http://azure.microsoft.com/en-us/documentation/articles/documentdb-nodejs-application/">tutorial</a> to help you get started.</p>
-<h4>Note:</h4><p>When connecting to the <a href="https://docs.microsoft.com/en-us/azure/documentdb/documentdb-nosql-local-emulator">emulator</a> from the SDK, SSL verification is disabled. </p>
+<pre class="prettyprint source"><code>npm install documentdb</code></pre><h2>Usage</h2><p>To use this SDK to call DocumentDB APIs of Azure Cosmos DB, you need to first <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/create-documentdb-nodejs">create an account</a>.</p>
+<p>You can follow this <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/documentdb-nodejs-application">tutorial</a> to help you get started.</p>
+<h4>Note:</h4><p>When connecting to the <a href="https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator">emulator</a> from the SDK, SSL verification is disabled. </p>
 <h2>Examples</h2><h3>Hello World using Callbacks via the Core Module</h3><pre class="prettyprint source lang-js"><code>var DocumentClient = require('documentdb').DocumentClient;
 
 var host = &quot;[hostendpoint]&quot;;                     // Add your endpoint
@@ -83,16 +84,16 @@ function cleanup(client, database) {
     client.deleteDatabase(database._self, function(err) {
         if(err) console.log(err);
     })
-}</code></pre><h3>Youtube Videos</h3><p>Getting started with Azure DocumentDB on Node.js:</p>
-<p><a href="http://www.youtube.com/watch?v=UAE7h9PCZjA"><img src="http://img.youtube.com/vi/UAE7h9PCZjA/0.jpg" alt="Azure Demo: Getting started with Azure DocumentDB on Node.js"></a></p>
-<h2>Need Help?</h2><p>Be sure to check out the Microsoft Azure <a href="https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocumentDB">Developer Forums on MSDN</a> or the <a href="http://stackoverflow.com/questions/tagged/azure-documentdb">Developer Forums on Stack Overflow</a> if you have trouble with the provided code.</p>
+}</code></pre><h3>Youtube Videos</h3><p>Getting started with DocumentDB Node.js SDK:</p>
+<p><a href="http://www.youtube.com/watch?v=UAE7h9PCZjA"><img src="http://img.youtube.com/vi/UAE7h9PCZjA/0.jpg" alt="Azure Demo: Getting started with DocumentDB Node.js SDK"></a></p>
+<h2>Need Help?</h2><p>Be sure to check out the Microsoft Azure <a href="https://social.msdn.microsoft.com/forums/azure/en-US/home?forum=AzureDocumentDB">Developer Forums on MSDN</a> or the <a href="https://stackoverflow.com/questions/tagged/azure-cosmosdb">Developer Forums on Stack Overflow</a> if you have trouble with the provided code.</p>
 <h2>Contribute Code or Provide Feedback</h2><p>If you would like to become an active contributor to this project please follow the instructions provided in <a href="http://azure.github.io/guidelines.html">Azure Projects Contribution Guidelines</a>.</p>
 <p>If you encounter any bugs with the library please file an issue in the <a href="https://github.com/Azure/azure-documentdb-node/issues">Issues</a> section of the project.</p>
 <h2>Learn More</h2><ul>
 <li><a href="http://azure.microsoft.com/en-us/develop/nodejs">Azure Developer Center</a></li>
-<li><a href="http://azure.github.io/azure-documentdb-node/">Azure DocumentDB Node.js SDK Documentation</a></li>
-<li><a href="http://azure.microsoft.com/en-us/documentation/services/documentdb/">Azure DocumentDB Service</a></li>
-<li><a href="https://azure.microsoft.com/en-us/documentation/articles/documentdb-community/">Azure DocumentDB Community Page</a></li>
+<li><a href="http://azure.github.io/azure-documentdb-node/">Node.js SDK Documentation for using DocumentDB APIs of Azure Cosmos DB Service.</a></li>
+<li><a href="https://azure.microsoft.com/en-us/blog/dear-documentdb-customers-welcome-to-azure-cosmos-db/">Azure Cosmos DB Service</a></li>
+<li><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/community">Azure Cosmos DB Community Page</a></li>
 </ul></article>
     </section>
 
@@ -110,7 +111,7 @@ function cleanup(client, database) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Tue May 09 2017 22:25:38 GMT-0700 (Pacific Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jan 03 2018 16:00:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
