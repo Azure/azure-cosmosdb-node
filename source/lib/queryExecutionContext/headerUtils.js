@@ -64,7 +64,7 @@ var HeaderUtils = Base.defineClass(
             if (!toBeMergedHeaders) {
                 return;
             }
-            headers[Constants.HttpHeaders.RequestCharge] += this.getRequestChargeIfAny(toBeMergedHeaders);
+            headers[Constants.HttpHeaders.RequestCharge] += this.getRequestChargeIfAny(toBeMergedHeaders[Constants.HttpHeaders.RequestCharge]);
             if (toBeMergedHeaders[Constants.HttpHeaders.IsRUPerMinuteUsed]) {
                 headers[Constants.HttpHeaders.IsRUPerMinuteUsed] = toBeMergedHeaders[Constants.HttpHeaders.IsRUPerMinuteUsed];
             }
