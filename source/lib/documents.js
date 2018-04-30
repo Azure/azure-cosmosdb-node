@@ -306,7 +306,9 @@ var AzureDocuments = Base.defineClass(null, null,
             this.PreferredLocations = [];
             this.RetryOptions = new RetryOptions();
             this.DisableSSLVerification = false;
-            this.ProxyUrl = "";
+            this.ProxyUrl = process.env.https_proxy || 
+                process.env.HTTP_PROXY || 
+                process.env.http_proxy ||  "";
         })
     }
 );
