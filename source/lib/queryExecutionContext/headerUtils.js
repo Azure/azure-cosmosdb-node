@@ -25,6 +25,7 @@ SOFTWARE.
 
 var Base = require("../base")
     , Constants = require("../constants")
+    , QueryMetrics = require("../queryMetrics/queryMetrics.js")
     , assert = require("assert")
     , util = require("util");
 
@@ -38,7 +39,7 @@ var HeaderUtils = Base.defineClass(
             } else if (typeof (headers) == 'string') {
                 return parseFloat(headers);
             }
-
+            
             if (headers) {
                 var rc = headers[Constants.HttpHeaders.RequestCharge];
                 if (rc) {
@@ -50,23 +51,45 @@ var HeaderUtils = Base.defineClass(
                 return 0;
             }
         },
-
+        
         getInitialHeader: function () {
             var headers = {};
             headers[Constants.HttpHeaders.RequestCharge] = 0;
+            headers[Constants.HttpHeaders.QueryMetrics] = {};
             return headers;
         },
-
+        
         mergeHeaders: function (headers, toBeMergedHeaders) {
             if (headers[Constants.HttpHeaders.RequestCharge] == undefined) {
                 headers[Constants.HttpHeaders.RequestCharge] = 0;
             }
+            
+            if (headers[Constants.HttpHeaders.QueryMetrics] == undefined) {
+                headers[Constants.HttpHeaders.QueryMetrics] = QueryMetrics.zero;
+            }
+            
             if (!toBeMergedHeaders) {
                 return;
             }
+            
             headers[Constants.HttpHeaders.RequestCharge] += this.getRequestChargeIfAny(toBeMergedHeaders);
             if (toBeMergedHeaders[Constants.HttpHeaders.IsRUPerMinuteUsed]) {
                 headers[Constants.HttpHeaders.IsRUPerMinuteUsed] = toBeMergedHeaders[Constants.HttpHeaders.IsRUPerMinuteUsed];
+            }
+            
+            if (Constants.HttpHeaders.QueryMetrics in toBeMergedHeaders) {
+                var headerQueryMetrics = headers[Constants.HttpHeaders.QueryMetrics];
+                var toBeMergedHeaderQueryMetrics = toBeMergedHeaders[Constants.HttpHeaders.QueryMetrics];
+                
+                for (var partitionId in toBeMergedHeaderQueryMetrics) {
+                    if (partitionId in headerQueryMetrics) {
+                        var combinedQueryMetrics = headerQueryMetrics[partitionId].add(toBeMergedHeaderQueryMetrics[partitionId]);
+                        headerQueryMetrics[partitionId] = combinedQueryMetrics;
+                    }
+                    else {
+                        headerQueryMetrics[partitionId] = toBeMergedHeaderQueryMetrics[partitionId];
+                    }
+                }
             }
         }
     }

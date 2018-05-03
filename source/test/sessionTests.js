@@ -206,8 +206,37 @@ describe("Session Token", function () {
                         applySessionTokenStub.restore();
 
                         client.readDocument(collectionLink + "/docs/1", { 'partitionKey': '1' }, function (err, document1) {
-                            //console.log(document1);
                             assert.equal(err, undefined, "error creating collection");
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    it("validate session container update on 'Not found' with 'undefined' status code for non master resource", function (done) {
+        var client2 = new DocumentDBClient(host, { masterKey: masterKey }, null, 'Session');
+        client.createDatabase(databaseBody, function (err, database) {
+            assert.equal(err, undefined, "error creating database");
+
+            client.createCollection(database._self, collectionDefinition, collectionOptions, function (err, createdCollection) {
+                assert.equal(err, undefined, "error creating collection");
+
+                client.createDocument(createdCollection._self, { "id": "1"}, function (err, createdDocument, headers) {
+                    assert.equal(err, undefined, "error creating document");
+                    var requestOptions = { 'partitionKey': '1' };
+
+                    client2.deleteDocument(createdDocument._self, requestOptions, function (err, document2, headers) {
+                        assert.equal(err, undefined, "error deleting document");
+                        var setSessionTokenSpy = sinon.spy(client.sessionContainer, 'setSessionToken');
+
+                        client.readDocument(createdDocument._self, requestOptions, function (err, readDocument, headers) {
+                            assert.equal(readDocument, undefined, "document should not be read");
+                            assert.equal(err.code, 404, "expecting 404 (Not found)");
+                            assert.equal(err.substatus, undefined, "expecting substatus code to be undefined");
+                            assert.equal(setSessionTokenSpy.callCount, 1, "unexpected number of calls to sesSessionToken");
+                            setSessionTokenSpy.restore();
                             done();
                         });
                     });

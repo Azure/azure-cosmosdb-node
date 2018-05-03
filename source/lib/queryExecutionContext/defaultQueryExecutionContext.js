@@ -24,6 +24,8 @@ SOFTWARE.
 "use strict";
 
 var Base = require("../base")
+  , QueryMetrics = require("../queryMetrics/queryMetrics.js")
+  , ClientSideMetrics = require("../queryMetrics/clientSideMetrics.js")
   , Constants = require("../constants");
 
 //SCRIPT START
@@ -144,6 +146,35 @@ var DefaultQueryExecutionContext = Base.defineClass(
                 that.state = DefaultQueryExecutionContext.STATES.inProgress;
                 that.currentIndex = 0;
                 that.options.continuation = originalContinuation;
+                
+                // deserializing query metrics so that we aren't working with delimited strings in the rest of the code base
+                if (Constants.HttpHeaders.QueryMetrics in responseHeaders) {
+                    var delimitedString = responseHeaders[Constants.HttpHeaders.QueryMetrics];
+                    var queryMetrics = QueryMetrics.createFromDelimitedString(delimitedString);
+                    
+                    // Add the request charge to the query metrics so that we can have per partition request charge.
+                    if (Constants.HttpHeaders.RequestCharge in responseHeaders) {
+                        queryMetrics = new QueryMetrics(
+                            queryMetrics._getRetrievedDocumentCount(),
+                            queryMetrics._getRetrievedDocumentSize(),
+                            queryMetrics._getOutputDocumentCount(),
+                            queryMetrics._getOutputDocumentSize(),
+                            queryMetrics._getIndexHitDocumentCount(),
+                            queryMetrics._getTotalQueryExecutionTime(),
+                            queryMetrics._getQueryPreparationTimes(),
+                            queryMetrics._getIndexLookupTime(),
+                            queryMetrics._getDocumentLoadTime(),
+                            queryMetrics._getVMExecutionTime(),
+                            queryMetrics._getRuntimeExecutionTimes(),
+                            queryMetrics._getDocumentWriteTime(),
+                            new ClientSideMetrics(responseHeaders[Constants.HttpHeaders.RequestCharge]));
+                    }
+
+                    // Wraping query metrics in a object where the key is '0' just so single partition and partition queries have the same response schema
+                    responseHeaders[Constants.HttpHeaders.QueryMetrics] = {};
+                    responseHeaders[Constants.HttpHeaders.QueryMetrics]["0"] = queryMetrics;
+                }
+
                 callback(undefined, resources, responseHeaders);
             });
         },

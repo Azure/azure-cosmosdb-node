@@ -24,7 +24,10 @@ SOFTWARE.
 "use strict";
 
 var Base = require("../base")
+    , QueryMetrics = require("../queryMetrics/queryMetrics.js")
+    , ClientSideMetrics = require("../queryMetrics/clientSideMetrics.js")
     , DefaultQueryExecutionContext = require("./defaultQueryExecutionContext")
+    , Constants = require("../constants")
     , HttpHeaders = require("../constants").HttpHeaders
     , HeaderUtils = require("./headerUtils")
     , StatusCodes = require("../statusCodes").StatusCodes
@@ -195,6 +198,16 @@ var DocumentProducer = Base.defineClass(
                     resources.forEach(function (element) {
                         that.fetchResults.push(new FetchResult(element, undefined));
                     });
+                }
+                
+                // need to modify the header response so that the query metrics are per partition
+                if (headerResponse != null && Constants.HttpHeaders.QueryMetrics in headerResponse) {
+                    // "0" is the default partition before one is actually assigned.
+                    var queryMetrics = headerResponse[Constants.HttpHeaders.QueryMetrics]["0"];
+                    
+                    // Wraping query metrics in a object where the keys are the partition key range.
+                    headerResponse[Constants.HttpHeaders.QueryMetrics] = {};
+                    headerResponse[Constants.HttpHeaders.QueryMetrics][that.targetPartitionKeyRange.id] = queryMetrics;
                 }
 
                 return callback(undefined, resources, headerResponse);

@@ -254,7 +254,11 @@ var Base = {
         }
 
         if (options.populateQuotaInfo) {
-            headers[Constants.HttpHeaders.PopulateQuotaInfo] = true;
+            headers[Constants.HttpHeaders.PopulateQuotaInfo] = options.populateQuotaInfo;
+        }
+        
+        if (options.populateQueryMetrics) {
+            headers[Constants.HttpHeaders.PopulateQueryMetrics] = options.populateQueryMetrics;
         }
         
         // If the user is not using partition resolver, we add options.partitonKey to the header for elastic collections

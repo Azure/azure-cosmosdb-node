@@ -107,7 +107,7 @@ var SessionContainer = Base.defineClass(
                 delete this.collectionResourceIdToSessionTokens[collectionResourceId];
         },
 
-        setSessionToken: function (request, reqHeaders, resHeaders) {
+        setSessionToken: function (request, resHeaders) {
             if (resHeaders && !this.isReadingFromMaster(request['resourceType'], request['opearationType'])) {
                 var sessionToken = resHeaders[Constants.HttpHeaders.SessionToken];
                 if (sessionToken) {
@@ -173,14 +173,14 @@ var SessionContainer = Base.defineClass(
         },
 
         isReadingFromMaster: function (resourceType, operationType) {
-            if (resourceType == "offers" ||
-                resourceType == "dbs" ||
-                resourceType == "users" ||
-                resourceType == "permissions" ||
-                resourceType == "topology" ||
-                resourceType == "databaseaccount" ||
-                resourceType == "pkranges" ||
-                (resourceType == "colls"
+            if (resourceType == Constants.Path.OffersPathSegment ||
+                resourceType == Constants.Path.DatabasesPathSegment ||
+                resourceType == Constants.Path.UsersPathSegment ||
+                resourceType == Constants.Path.PermissionsPathSegment ||
+                resourceType == Constants.Path.TopologyPathSegment ||
+                resourceType == Constants.Path.DatabaseAccountPathSegment ||
+                resourceType == Constants.Path.PartitionKeyRangesPathSegment ||
+                (resourceType == Constants.Path.CollectionsPathSegment
                     && (operationType == Constants.OperationTypes.Query))) {
                 return true;
             }

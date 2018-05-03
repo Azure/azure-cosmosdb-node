@@ -36,7 +36,9 @@ var Base = require("./base")
     , Helper = require("./helper").Helper
     , util = require("util")
     , Platform = require("./platform")
-    , SessionContainer = require("./sessionContainer");
+    , SessionContainer = require("./sessionContainer")
+    , StatusCodes = require("./statusCodes").StatusCodes
+    , SubStatusCodes = require("./statusCodes").SubStatusCodes;
 
 //SCRIPT START
 var DocumentClient = Base.defineClass(
@@ -102,7 +104,7 @@ var DocumentClient = Base.defineClass(
         this.sessionContainer = new SessionContainer(this.urlConnection);
 
         // Initialize request agent
-        var requestAgentOptions = { keepAlive: true, maxSockets: Infinity };
+        var requestAgentOptions = { keepAlive: true, maxSockets: 256, maxFreeSockets: 256 };
         if (!!this.connectionPolicy.ProxyUrl) {
             var proxyUrl = url.parse(this.connectionPolicy.ProxyUrl);
             requestAgentOptions.proxy = {
@@ -2194,7 +2196,7 @@ var DocumentClient = Base.defineClass(
             // create will use WriteEndpoint since it uses POST operation
             this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
                 that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Create, headers, resHeaders);
+                    that.captureSessionToken(err, path, Constants.OperationTypes.Create, resHeaders);
                     callback(err, result, resHeaders);
                 });
             });
@@ -2213,7 +2215,7 @@ var DocumentClient = Base.defineClass(
             // upsert will use WriteEndpoint since it uses POST operation
             this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
                 that.post(writeEndpoint, path, body, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Upsert, headers, resHeaders);
+                    that.captureSessionToken(err, path, Constants.OperationTypes.Upsert, resHeaders);
                     callback(err, result, resHeaders);
                 });
             });
@@ -2231,7 +2233,7 @@ var DocumentClient = Base.defineClass(
             // replace will use WriteEndpoint since it uses PUT operation
             this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
                 that.put(writeEndpoint, path, resource, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Replace, headers, resHeaders);
+                    that.captureSessionToken(err, path, Constants.OperationTypes.Replace, resHeaders);
                     callback(err, result, resHeaders);
                 });
             });
@@ -2251,7 +2253,7 @@ var DocumentClient = Base.defineClass(
             // read will use ReadEndpoint since it uses GET operation
             this._globalEndpointManager.getReadEndpoint(function (readEndpoint) {
                 that.get(readEndpoint, request, headers, function (err, result, resHeaders) {
-                    that.captureSessionToken(path, Constants.OperationTypes.Read, headers, resHeaders);
+                    that.captureSessionToken(err, path, Constants.OperationTypes.Read, resHeaders);
                     callback(err, result, resHeaders);
                 });
             });
@@ -2270,7 +2272,7 @@ var DocumentClient = Base.defineClass(
             this._globalEndpointManager.getWriteEndpoint(function (writeEndpoint) {
                 that.delete(writeEndpoint, path, headers, function (err, result, resHeaders) {
                     if (Base.parseLink(path).type != "colls")
-                        that.captureSessionToken(path, Constants.OperationTypes.Delete, headers, resHeaders);
+                        that.captureSessionToken(err, path, Constants.OperationTypes.Delete, resHeaders);
                     else
                         that.clearSessionToken(path);
                     callback(err, result, resHeaders);
@@ -2383,7 +2385,7 @@ var DocumentClient = Base.defineClass(
                     that.applySessionToken(path, headers);
 
                     documentclient.get(readEndpoint, request, headers, function (err, result, resHeaders) {
-                        that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
+                        that.captureSessionToken(err, path, Constants.OperationTypes.Query, resHeaders);
                         successCallback(err, result, resHeaders);
                     });
                 } else {
@@ -2406,7 +2408,7 @@ var DocumentClient = Base.defineClass(
                     that.applySessionToken(path, headers);
 
                     documentclient.post(readEndpoint, request, query, headers, function (err, result, resHeaders) {
-                        that.captureSessionToken(path, Constants.OperationTypes.Query, headers, resHeaders);
+                        that.captureSessionToken(err, path, Constants.OperationTypes.Query, resHeaders);
                         successCallback(err, result, resHeaders);
                     });
                 }
@@ -2588,10 +2590,15 @@ var DocumentClient = Base.defineClass(
             }
         },
 
-        captureSessionToken: function (path, opType, reqHeaders, resHeaders) {
+        captureSessionToken: function (err, path, opType, resHeaders) {
             var request = this.getSessionParams(path);
             request['operationType'] = opType;
-            this.sessionContainer.setSessionToken(request, reqHeaders, resHeaders);
+            if (!err ||
+                ((!this.isMasterResource(request.resourceType)) &&
+                    (err.code === StatusCodes.PreconditionFailed || err.code === StatusCodes.Conflict ||
+                    (err.code === StatusCodes.NotFound && err.substatus !== SubStatusCodes.ReadSessionNotAvailable)))) {
+                this.sessionContainer.setSessionToken(request, resHeaders);
+            }
         },
 
         clearSessionToken: function (path) {
@@ -2612,6 +2619,21 @@ var DocumentClient = Base.defineClass(
             }
             var resourceType = parserOutput.type;
             return { 'isNameBased': isNameBased, 'resourceId': resourceId, 'resourceAddress': resourceAddress, 'resourceType': resourceType };
+        },
+
+        isMasterResource: function (resourceType) {
+            if (resourceType === Constants.Path.OffersPathSegment ||
+                resourceType === Constants.Path.DatabasesPathSegment ||
+                resourceType === Constants.Path.UsersPathSegment ||
+                resourceType === Constants.Path.PermissionsPathSegment ||
+                resourceType === Constants.Path.TopologyPathSegment ||
+                resourceType === Constants.Path.DatabaseAccountPathSegment ||
+                resourceType === Constants.Path.PartitionKeyRangesPathSegment ||
+                resourceType === Constants.Path.CollectionsPathSegment) {
+                return true;
+            }
+
+            return false;
         }
     }
 );
@@ -2646,6 +2668,7 @@ var DocumentClient = Base.defineClass(
  * @property {boolean} [disableRUPerMinuteUsage]    -       DisableRUPerMinuteUsage is used to enable/disable Request Units(RUs)/minute capacity to serve the request if regular provisioned RUs/second is exhausted.
  * @property {boolean} [enableCrossPartitionQuery]  -       A value indicating whether users are enabled to send more than one request to execute the query in the Azure Cosmos DB database service.
                                                             <p>More than one request is necessary if the query is not scoped to single partition key value.</p>
+ * @property {boolean} [populateQueryMetrics]       -       Whether to populate the query metrics.
  * @property {boolean} [enableScanInQuery]          -       Allow scan on the queries which couldn't be served as indexing was opted out on the requested paths.
  * @property {number} [maxDegreeOfParallelism]      -       The maximum number of concurrent operations that run client side during parallel query execution in the Azure Cosmos DB database service. Negative values make the system automatically decides the number of concurrent operations to run.
  * @property {number} [maxItemCount]                -       Max number of items to be returned in the enumeration operation.
