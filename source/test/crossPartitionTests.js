@@ -47,7 +47,6 @@ var host = testConfig.host;
 var masterKey = testConfig.masterKey;
 
 describe("NodeJS Cross Partition Tests", function () {
-    console.log("host is " + testConfig.host);
     var removeAllDatabases = function (done) {
         var client = new DocumentDBClient(host, { masterKey: masterKey });
         client.readDatabases().toArray(function (err, databases) {
@@ -56,13 +55,13 @@ describe("NodeJS Cross Partition Tests", function () {
                 assert.fail();
                 return done(err);
             }
-
+            
             var length = databases.length;
-
+            
             if (length === 0) {
                 return done();
             }
-
+            
             var count = 0;
             databases.forEach(function (database) {
                 client.deleteDatabase(database._self, function (err, db) {
@@ -71,7 +70,7 @@ describe("NodeJS Cross Partition Tests", function () {
                         assert.fail();
                         return done(err);
                     }
-
+                    
                     count++;
                     if (count === length) {
                         done();
@@ -80,7 +79,7 @@ describe("NodeJS Cross Partition Tests", function () {
             });
         });
     };
-
+    
     var generateDocuments = function (docSize) {
         var docs = []
         for (var i = 0; i < docSize; i++) {
@@ -99,7 +98,7 @@ describe("NodeJS Cross Partition Tests", function () {
         }
         return docs;
     };
-
+    
     var getDatabaseLink = function (isNameBasedLink, db) {
         if (isNameBasedLink) {
             return "dbs/" + db.id;
@@ -107,7 +106,7 @@ describe("NodeJS Cross Partition Tests", function () {
             return db._self;
         }
     };
-
+    
     var getCollectionLink = function (isNameBasedLink, db, coll) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id;
@@ -115,7 +114,7 @@ describe("NodeJS Cross Partition Tests", function () {
             return coll._self;
         }
     };
-
+    
     var getDocumentLink = function (isNameBasedLink, db, coll, doc) {
         if (isNameBasedLink) {
             return "dbs/" + db.id + "/colls/" + coll.id + "/docs/" + doc.id;
@@ -123,7 +122,7 @@ describe("NodeJS Cross Partition Tests", function () {
             return doc._self;
         }
     };
-
+    
     var bulkInsertDocuments = function (client, isNameBased, db, collection, documents, callback) {
         var returnedDocuments = [];
         var insertDocument = function (currentIndex) {
@@ -138,14 +137,14 @@ describe("NodeJS Cross Partition Tests", function () {
                 });
             }
         };
-
+        
         insertDocument(0);
     };
-
+    
     describe("Validate Query", function () {
         var client = new DocumentDBClient(host, { masterKey: masterKey });
         var documentDefinitions = generateDocuments(20);
-
+        
         //- removes all the databases, 
         //  - creates a new database,
         //      - creates a new collecton,
@@ -157,14 +156,14 @@ describe("NodeJS Cross Partition Tests", function () {
                         function () {
                             bulkInsertDocuments(client, isNameBased, db, collection, documentDefinitions,
                                 function (insertedDocs) {
-                                    return done();
-                                });
+                                return done();
+                            });
                         }
                     );
                 });
             })
         });
-
+        
         var db = undefined;
         var createDatabase = function (done) {
             client.createDatabase({ id: "sample 中文 database" }, function (err, createdDB) {
@@ -175,7 +174,7 @@ describe("NodeJS Cross Partition Tests", function () {
         }
         var collection = undefined;
         var isNameBased = false;
-
+        
         var createCollection = function (done) {
             var collectionDefinition = {
                 'id': 'sample collection',
@@ -210,20 +209,20 @@ describe("NodeJS Cross Partition Tests", function () {
                 done();
             });
         };
-
+        
         var validateResults = function (actualResults, expectedOrderIds) {
             assert.equal(actualResults.length, expectedOrderIds.length,
                 "actual results length doesn't match with expected results length.");
-
+            
             for (var i = 0; i < actualResults.length; i++) {
                 assert.equal(actualResults[i].id, expectedOrderIds[i],
                     "actual result content doesn't match with expected result content. " + actualResults[i].id + " != " + expectedOrderIds[i]
                 );
             }
         }
-
+        
         var validateToArray = function (queryIterator, options, expectedOrderIds, done) {
-
+            
             ////////////////////////////////
             // validate toArray()
             ////////////////////////////////
@@ -232,16 +231,16 @@ describe("NodeJS Cross Partition Tests", function () {
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + JSON.stringify(err));
                 assert.equal(results.length, expectedOrderIds.length, "invalid number of results");
                 assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
-
+                
                 validateResults(results, expectedOrderIds);
                 return done();
             };
-
+            
             queryIterator.toArray(toArrayVerifier);
         };
-
+        
         var validateNextItem = function (queryIterator, options, expectedOrderIds, done) {
-
+            
             ////////////////////////////////
             // validate nextItem()
             ////////////////////////////////
@@ -251,20 +250,20 @@ describe("NodeJS Cross Partition Tests", function () {
                 if (item === undefined) {
                     assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");
                     validateResults(results, expectedOrderIds);
-
+                    
                     return done();
                 }
                 results = results.concat(item);
-
+                
                 if (results.length < expectedOrderIds.length) {
                     assert(queryIterator.hasMoreResults(), "hasMoreResults must indicate more results");
                 }
                 return queryIterator.nextItem(nextItemVerifier);
             };
-
+            
             queryIterator.nextItem(nextItemVerifier);
         };
-
+        
         var validateNextItemAndCurrentAndHasMoreResults = function (queryIterator, options, expectedOrderIds, done) {
             // curent and nextItem recursively invoke each other till queryIterator is exhausted
             ////////////////////////////////
@@ -272,51 +271,51 @@ describe("NodeJS Cross Partition Tests", function () {
             ////////////////////////////////
             var results = [];
             var nextItemVerifier = function (err, item) {
-
+                
                 ////////////////////////////////
                 // validate current()
                 ////////////////////////////////
                 var currentVerifier = function (err, currentItem) {
                     assert.equal(err, undefined, "unexpected failure in fetching the results: " + err);
                     assert.equal(item, currentItem, "current must give the previously item returned by nextItem");
-
+                    
                     if (currentItem === undefined) {
                         assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");
                         validateResults(results, expectedOrderIds);
-
+                        
                         return done();
                     }
-
+                    
                     if (results.length < expectedOrderIds.length) {
                         assert(queryIterator.hasMoreResults(), "hasMoreResults must indicate more results");
                     }
-
+                    
                     return queryIterator.nextItem(nextItemVerifier);
                 };
-
+                
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + err);
-
+                
                 if (item === undefined) {
                     assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");
                     validateResults(results, expectedOrderIds);
-
+                    
                     return queryIterator.current(currentVerifier);
                 }
                 results = results.concat(item);
-
+                
                 if (results.length < expectedOrderIds.length) {
                     assert(queryIterator.hasMoreResults(), "hasMoreResults must indicate more results");
                 }
-
+                
                 var currentVerifier = function (err, currentItem) {
                     queryIterator.nextItem(nextItemVerifier);
                 }
-
+                
                 return queryIterator.current(currentVerifier);
             };
             queryIterator.nextItem(nextItemVerifier);
         };
-
+        
         var validateExecuteNextWithGivenContinuationToken = function (collectionLink, query, origOptions, listOfResultPages, listOfHeaders, done) {
             var options = JSON.parse(JSON.stringify(origOptions));
             var expectedResults = listOfResultPages.shift();
@@ -326,33 +325,32 @@ describe("NodeJS Cross Partition Tests", function () {
                 assert(listOfResultPages.length == 0);
                 return done();
             }
-
+            
             assert.notEqual(expectedResults, undefined);
-
+            
             var continuationToken = headers[Constants.HttpHeaders.Continuation];
-
+            
             var fromTokenValidator = function (token, expectedResultsFromToken, expectedHeadersFromToken) {
                 options.continuation = token;
                 var queryIterator = client.queryDocuments(collectionLink, query, options);
-
+                
                 var fromTokenToLastPageValidator = function (queryIterator, token, expectedResultsFromToken, expectedHeadersFromToken) {
-
                     // validates single page result and 
                     var resultPageValidator = function (err, resources, headers) {
                         assert.equal(err, undefined, "unexpected failure in fetching the results: " + err + JSON.stringify(err));
-
+                        
                         var exptectedResultPage = expectedResultsFromToken.shift();
                         var expectedHeaders = expectedHeadersFromToken.shift();
                         if (exptectedResultPage === undefined) {
                             assert.equal(resources, undefined);
                             assert.equal(headers, undefined);
                         } else {
-
+                            
                             validateResults(resources, exptectedResultPage.map(
                                 function (r) {
                                     return r['id'];
                                 }));
-
+                            
                             if (expectedHeaders) {
                                 assert.equal(
                                     headers[Constants.HttpHeaders.Continuation],
@@ -361,7 +359,7 @@ describe("NodeJS Cross Partition Tests", function () {
                                 assert.equal(headers, undefined);
                             }
                         }
-
+                        
                         if (expectedHeadersFromToken.length > 0) {
                             return fromTokenToLastPageValidator(queryIterator, token, expectedResultsFromToken, expectedHeadersFromToken);
                         } else {
@@ -375,23 +373,23 @@ describe("NodeJS Cross Partition Tests", function () {
             }
             return fromTokenValidator(continuationToken, listOfResultPages, listOfHeaders);
         }
-
+        
         var validateExecuteNextAndHasMoreResults = function (collectionLink, query, options, queryIterator, expectedOrderIds, done,
             validateExecuteNextWithContinuationToken) {
             var pageSize = options['maxItemCount'];
-
+            
             ////////////////////////////////
             // validate executeNext() 
             ////////////////////////////////
-
+            
             var listOfResultPages = [];
             var listOfHeaders = [];
-
+            
             var totalFetchedResults = [];
             var executeNextValidator = function (err, results, headers) {
                 listOfResultPages.push(results);
                 listOfHeaders.push(headers);
-
+                
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + err + JSON.stringify(err));
                 if (results === undefined || (totalFetchedResults.length === expectedOrderIds.length)) {
                     // no more results
@@ -406,9 +404,9 @@ describe("NodeJS Cross Partition Tests", function () {
                         return done();
                     }
                 }
-
+                
                 totalFetchedResults = totalFetchedResults.concat(results);
-
+                
                 if (totalFetchedResults.length < expectedOrderIds.length) {
                     // there are more results
                     assert(results.length <= pageSize, "executeNext: invalid fetch block size");
@@ -424,17 +422,17 @@ describe("NodeJS Cross Partition Tests", function () {
                     // no more results
                     assert.equal(expectedOrderIds.length, totalFetchedResults.length, "executeNext: didn't fetch all the results");
                     assert(results.length <= pageSize, "executeNext: actual fetch size is more than the requested page size");
-
+                    
                     //validate that next execute returns undefined resources
                     return queryIterator.executeNext(executeNextValidator);
                 }
             };
-
+            
             queryIterator.executeNext(executeNextValidator);
         }
-
+        
         var validateForEach = function (queryIterator, options, expectedOrderIds, done) {
-
+            
             ////////////////////////////////
             // validate forEach() 
             ////////////////////////////////
@@ -453,106 +451,124 @@ describe("NodeJS Cross Partition Tests", function () {
                 }
                 return true;
             };
-
+            
             queryIterator.forEach(forEachCallback);
         }
-
+        
+        var validateQueryMetrics = function (queryIterator, done) {
+            var executeNextCallback = function (err, results, headers) {
+                if (results === undefined) {
+                    // no more results
+                    return done();
+                }
+                
+                assert.notEqual(headers[Constants.HttpHeaders.QueryMetrics], null);
+                return queryIterator.executeNext(executeNextCallback);
+            };
+            
+            queryIterator.executeNext(executeNextCallback);
+        }
+        
         var executeQueryAndValidateResults = function (collectionLink, query, options, expectedOrderIds, done, validateExecuteNextWithContinuationToken) {
-
+            
+            options.populateQueryMetrics = true;
             validateExecuteNextWithContinuationToken = validateExecuteNextWithContinuationToken || false;
             var queryIterator = client.queryDocuments(collectionLink, query, options);
-
+            
             validateToArray(queryIterator, options, expectedOrderIds,
                 function () {
-                    queryIterator.reset();
-                    validateExecuteNextAndHasMoreResults(collectionLink, query, options, queryIterator, expectedOrderIds,
+                queryIterator.reset();
+                validateExecuteNextAndHasMoreResults(collectionLink, query, options, queryIterator, expectedOrderIds,
                         function () {
-                            queryIterator.reset();
-                            validateNextItemAndCurrentAndHasMoreResults(queryIterator, options, expectedOrderIds,
+                    queryIterator.reset();
+                    validateNextItemAndCurrentAndHasMoreResults(queryIterator, options, expectedOrderIds,
                                 function () {
-                                    validateForEach(queryIterator, options, expectedOrderIds, done);
-                                }
-                            );
-                        },
-                        validateExecuteNextWithContinuationToken
+                        validateForEach(queryIterator, options, expectedOrderIds, function () {
+                            queryIterator.reset();
+                            validateQueryMetrics(queryIterator, done);
+                        });
+                    }
                     );
-                }
+                },
+                        validateExecuteNextWithContinuationToken
+                );
+            }
             );
         };
-
+        
         it("Validate Parallel Query As String With maxDegreeOfParallelism = 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0};
-
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
             }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done, false);
         });
-
+        
         it("Validate Parallel Query As String With maxDegreeOfParallelism: -1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: -1 };
-
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: -1, populateQueryMetrics: true };
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
             }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done, false);
         });
-
+        
         it("Validate Parallel Query As String With maxDegreeOfParallelism: 1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
             }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done, false);
         });
-
+        
         it("Validate Parallel Query As String With maxDegreeOfParallelism: 3", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
             }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done, false);
         });
-
+        
         var requestChargeValidator = function (queryIterator, done) {
-
+            
             var counter = 0;
             var totalRequestCharge = 0;
-
+            
             var consumeFunc = function (err, results, headers) {
                 var rc = (headers || {})[Constants.HttpHeaders.RequestCharge];
-
+                
                 if (counter == 0) {
                     assert(rc > 0);
                     counter += 1;
                 }
-
+                
                 if (results == undefined) {
                     assert(totalRequestCharge > 0);
                     return done();
@@ -563,79 +579,79 @@ describe("NodeJS Cross Partition Tests", function () {
                     queryIterator.executeNext(consumeFunc);
                 }
             };
-
+            
             queryIterator.executeNext(consumeFunc);
         }
-
+        
         it("Validate Parallel Query Request Charge With maxDegreeOfParallelism: 3", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
-
-
-
+        
+        
+        
         it("Validate Parallel Query Request Charge With maxDegreeOfParallelism: 1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
-
+        
         it("Validate Simple OrderBy Query Request Charge With maxDegreeOfParallelism = 1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
-
+        
         it("Validate Simple OrderBy Query Request Charge With maxDegreeOfParallelism = 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
-
+        
         it("Validate Top Query Request Charge with maxDegreeOfParallelism = 3", function (done) {
             // a top query
             var topCount = 6;
             // sanity check
             assert(topCount < documentDefinitions.length, "test setup is wrong");
-
+            
             var query = util.format('SELECT top %d * FROM root r', topCount);
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
-
+        
         it("Validate Top Query Request Charge with maxDegreeOfParallelism = 0", function (done) {
             // a top query
             var topCount = 6;
             // sanity check
             assert(topCount < documentDefinitions.length, "test setup is wrong");
-
+            
             var query = util.format('SELECT top %d * FROM root r', topCount);
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
-
+        
         it("Validate Simple OrderBy Query As String With maxDegreeOfParallelism = 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0};
-
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -643,16 +659,16 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Simple OrderBy Query As String With maxDegreeOfParallelism = 1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -660,16 +676,16 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Simple OrderBy Query As String With maxDegreeOfParallelism = 3", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3};
-
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -677,16 +693,16 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Simple OrderBy Query As String With maxDegreeOfParallelism = -1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: -1 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -694,16 +710,16 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Simple OrderBy Query As String", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -711,18 +727,18 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Simple OrderBy Query", function (done) {
             // simple order by query
             var querySpec = {
                 'query': 'SELECT * FROM root r order by r.spam'
             };
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -730,18 +746,18 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate OrderBy Query With ASC", function (done) {
             // an order by query with explicit ascending ordering
             var querySpec = {
                 'query': 'SELECT * FROM root r order by r.spam ASC'
             };
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -749,18 +765,18 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate OrderBy Query With DESC", function (done) {
             // an order by query with explicit descending ordering
             var querySpec = {
                 'query': 'SELECT * FROM root r order by r.spam DESC'
             };
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -768,11 +784,11 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             })).reverse();
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate OrderBy with top", function (done) {
             // an order by query with top, total existing docs more than requested top count   
             var topCount = 9;
@@ -780,7 +796,7 @@ describe("NodeJS Cross Partition Tests", function () {
                 'query': util.format('SELECT top %d * FROM root r order by r.spam', topCount)
             }
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -788,11 +804,11 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             })).slice(0, topCount);
-
-           executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
+            
+            executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
 
         });
-
+        
         it("Validate OrderBy with Top Query (less results than top counts)", function (done) {
             // an order by query with top, total existing docs less than requested top count   
             var topCount = 30
@@ -802,7 +818,7 @@ describe("NodeJS Cross Partition Tests", function () {
                 'query': util.format('SELECT top %d * FROM root r order by r.spam', topCount)
             }
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -810,26 +826,26 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Top Query with maxDegreeOfParallelism = 3", function (done) {
             // a top query
             var topCount = 6;
             // sanity check
             assert(topCount < documentDefinitions.length, "test setup is wrong");
-
+            
             var query = util.format('SELECT top %d * FROM root r', topCount);
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
-
+            
             // prepare expected behaviour verifier
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
-
+            
             var resultVerifier = function (err, results) {
                 assert.equal(err, undefined);
                 assert.equal(results.length, topCount);
-
+                
                 // select unique ids
                 var uniqueIds = {}
                 results.forEach(function (item) {
@@ -841,24 +857,24 @@ describe("NodeJS Cross Partition Tests", function () {
             };
             queryIterator.toArray(resultVerifier);
         });
-
-
+        
+        
         it("Validate Top Query", function (done) {
             // a top query
             var topCount = 6;
             // sanity check
             assert(topCount < documentDefinitions.length, "test setup is wrong");
-
+            
             var query = util.format('SELECT top %d * FROM root r', topCount);
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected behaviour verifier
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
-
+            
             var resultVerifier = function (err, results) {
                 assert.equal(err, undefined);
                 assert.equal(results.length, topCount);
-
+                
                 // select unique ids
                 var uniqueIds = {}
                 results.forEach(function (item) {
@@ -870,23 +886,23 @@ describe("NodeJS Cross Partition Tests", function () {
             };
             queryIterator.toArray(resultVerifier);
         });
-
+        
         it("Validate Top Query (with 0 topCount)", function (done) {
             // a top query
             var topCount = 0;
             // sanity check
             assert(topCount < documentDefinitions.length, "test setup is wrong");
-
+            
             var query = util.format('SELECT top %d * FROM root r', topCount);
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected behaviour verifier
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
-
+            
             var resultVerifier = function (err, results) {
                 assert.equal(err, undefined);
                 assert.equal(results.length, topCount);
-
+                
                 // select unique ids
                 var uniqueIds = {}
                 results.forEach(function (item) {
@@ -898,29 +914,29 @@ describe("NodeJS Cross Partition Tests", function () {
             };
             queryIterator.toArray(resultVerifier);
         });
-
+        
         it("Validate Parametrized Top Query", function (done) {
             // a top query
             var topCount = 6;
             // sanity check
             assert(topCount < documentDefinitions.length, "test setup is wrong");
-
+            
             var querySpec = {
                 'query': 'SELECT top @n * FROM root r',
-
+                
                 "parameters": [
                     { "name": "@n", "value": topCount }
                 ]
             }
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected behaviour verifier
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), querySpec, options);
-
+            
             var resultVerifier = function (err, results) {
                 assert.equal(err, undefined);
                 assert.equal(results.length, topCount);
-
+                
                 // select unique ids
                 var uniqueIds = {}
                 results.forEach(function (item) {
@@ -932,7 +948,7 @@ describe("NodeJS Cross Partition Tests", function () {
             };
             queryIterator.toArray(resultVerifier);
         });
-
+        
         it("Validate OrderBy with Parametrized Top Query", function (done) {
             // a parametrized top order by query
             var topCount = 9
@@ -941,13 +957,13 @@ describe("NodeJS Cross Partition Tests", function () {
             // a parametrized top order by query
             var querySpec = {
                 'query': 'SELECT top @n * FROM root r order by r.spam',
-
+                
                 "parameters": [
                     { "name": "@n", "value": topCount }
                 ]
             }
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -955,10 +971,10 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             })).slice(0, topCount);
-
+            
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate OrderBy with Parametrized Predicate", function (done) {
             // an order by query combined with parametrized predicate
             var querySpec = {
@@ -968,7 +984,7 @@ describe("NodeJS Cross Partition Tests", function () {
                 ]
             }
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -982,10 +998,10 @@ describe("NodeJS Cross Partition Tests", function () {
                 function (r) {
                     return r['id'];
                 }));
-
+            
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), querySpec, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Error Handling - Orderby where types are noncomparable", function (done) {
             // test orderby with different order by item type
             // an order by query
@@ -993,10 +1009,10 @@ describe("NodeJS Cross Partition Tests", function () {
                 'query': 'SELECT * FROM root r order by r.spam2',
             }
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected behaviour verifier
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
-
+            
             var errorVerifier = function (err, results) {
                 assert.equal(results, undefined);
                 assert.notEqual(err, undefined);
@@ -1004,12 +1020,12 @@ describe("NodeJS Cross Partition Tests", function () {
             };
             queryIterator.toArray(errorVerifier);
         });
-
+        
         it("Validate OrderBy Integer Query", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.cnt';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['cnt'];
@@ -1017,16 +1033,16 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate OrderBy Floating Point Number Query", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.number';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['number'];
@@ -1034,21 +1050,21 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             // validates the results size and order
             executeQueryAndValidateResults(getCollectionLink(isNameBased, db, collection), query, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate OrderBy Boolean Query", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.boolVar';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             queryIterator.toArray(function (err, results) {
                 assert.equal(err, undefined, "error occured");
                 assert.equal(results.length, documentDefinitions.length);
-
+                
                 var index = 0;
                 while (index < results.length) {
                     if (results[index].boolVar) {
@@ -1057,7 +1073,7 @@ describe("NodeJS Cross Partition Tests", function () {
                     assert(results[index].id % 2 === 1);
                     index++;
                 }
-
+                
                 while (index < results.length) {
                     assert(results[index].boolVar);
                     assert(results[index].id % 2 === 0);
@@ -1066,32 +1082,32 @@ describe("NodeJS Cross Partition Tests", function () {
                 done();
             });
         });
-
+        
         it("Validate forEach quick termination", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-
+            
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
             }
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
-            })).slice(0,1);
-
+            })).slice(0, 1);
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
-
+            
             validateForEach(queryIterator, options, expectedOrderedIds, done);
         });
-
+        
         it("Validate Failure", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-
+            
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2 };
-
+            
             // prepare expected results
             var getOrderByKey = function (r) {
                 return r['spam'];
@@ -1099,14 +1115,14 @@ describe("NodeJS Cross Partition Tests", function () {
             var expectedOrderedIds = (_.sortBy(documentDefinitions, getOrderByKey).map(function (r) {
                 return r['id'];
             }));
-
+            
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
-
+            
             
             var firstTime = true;
-
+            
             queryIterator.current(function (err, callback) {
-
+                
                 if (firstTime) {
                     firstTime = false;
                 //    console.log("print me " + Object.entries( queryIterator.queryExecutionContext));
@@ -1117,4 +1133,3 @@ describe("NodeJS Cross Partition Tests", function () {
         });
     });
 });
-

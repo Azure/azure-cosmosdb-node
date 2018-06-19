@@ -95,12 +95,13 @@ var Constants = {
         Prefer: "Prefer",
         Location: "Location",
         Referer: "referer",
-
+        A_IM: "A-IM",
+        
         // Query
         Query: "x-ms-documentdb-query",
         IsQuery: "x-ms-documentdb-isquery",
 
-        // Our custom DocumentDB headers
+        // Our custom Azure Cosmos DB headers
         Continuation: "x-ms-continuation",
         PageSize: "x-ms-max-item-count",
 
@@ -123,6 +124,10 @@ var Constants = {
         EmitVerboseTracesInQuery: "x-ms-documentdb-query-emit-traces",
         EnableCrossPartitionQuery: "x-ms-documentdb-query-enablecrosspartition",
         ParallelizeCrossPartitionQuery: "x-ms-documentdb-query-parallelizecrosspartitionquery",
+        
+        // QueryMetrics
+        PopulateQueryMetrics: "x-ms-documentdb-populatequerymetrics", // Request header to tell backend to give you query metrics.
+        QueryMetrics: "x-ms-documentdb-query-metrics", // Response header that holds the serialized version of query metrics.
 
         // Version headers and values
         Version: "x-ms-version",
@@ -185,7 +190,7 @@ var Constants = {
     CurrentVersion: "2017-11-15",
 
     SDKName: "documentdb-nodejs-sdk",
-    SDKVersion: "1.14.1",
+    SDKVersion: "1.14.4",
 
     DefaultPrecisions: {
         DefaultNumberHashPrecision: 3,
@@ -220,7 +225,10 @@ var Constants = {
         ConflictsPathSegment: "conflicts",
         AttachmentsPathSegment: "attachments",
         PartitionKeyRangesPathSegment: "pkranges",
-        SchemasPathSegment: "schemas"
+        SchemasPathSegment: "schemas",
+        OffersPathSegment: "offers",
+        TopologyPathSegment: "topology",
+        DatabaseAccountPathSegment: "databaseaccount"
     },
 
     OperationTypes: {

@@ -26,6 +26,7 @@ SOFTWARE.
 var lib = require("../lib/"),
     assert = require("assert"),
     testConfig = require("./_testConfig"),
+    sinon = require("sinon"),
     Stream = require("stream");
 
 var Base = lib.Base,
@@ -3588,7 +3589,15 @@ describe("NodeJS CRUD Tests", function () {
         var mockCreateRequestObjectStub = function (connectionPolicy, requestOptions, callback) {
             callback({ code: 429, body: "Request rate is too large", retryAfterInMilliseconds: retryAfterInMilliseconds });
         }
-        
+
+        var mockCreateRequestObjectForDefaultRetryStub = function (connectionPolicy, requestOptions, callback) {
+            global.counter++;
+            if (global.counter % 5 == 0)
+                return global.originalFunc(connectionPolicy, requestOptions, callback)
+            else
+                return callback({ code: "ECONNRESET", body: "Connection was reset" })
+        }
+               
         it("throttle retry policy test default retryAfter", function (done) {
             connectionPolicy.RetryOptions = new RetryOptions(5);
 
@@ -3671,11 +3680,67 @@ describe("NodeJS CRUD Tests", function () {
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
                         assert.equal(err.code, 429, "invalid error code");
                         assert.ok(responseHeaders[Constants.ThrottleRetryWaitTimeInMs] >= connectionPolicy.RetryOptions.MaxWaitTimeInSeconds * 1000);
-                        
+
                         request._createRequestObjectStub = originalCreateRequestObjectStub;
                         client.getDatabaseAccount = originalGetDatabaseAccount;
                         
                         done();
+                    });
+                });
+            });
+        });
+
+        it("default retry policy validate create failure", function (done) {
+            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+            client.createDatabase({ "id": "sample database" }, function (err, db) {
+                assert.equal(err, undefined, "error creating database");
+
+                client.createCollection(db._self, collectionDefinition, function (err, collection) {
+                    assert.equal(err, undefined, "error creating collection");
+
+                    global.originalFunc = request._createRequestObjectStub;
+                    global.counter = 0;
+
+                    request._createRequestObjectStub = mockCreateRequestObjectForDefaultRetryStub
+
+                    client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
+                        assert.equal(err.code, "ECONNRESET", "invalid error code");
+                        assert.equal(global.counter, 6, "invalid number of retries")
+
+                        request._createRequestObjectStub = global.originalFunc;
+
+                        done();
+                    });
+                });
+            });
+        });
+
+        it("default retry policy validate read success", function (done) {
+            var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+
+            client.createDatabase({ "id": "sample database" }, function (err, db) {
+                assert.equal(err, undefined, "error creating database");
+
+                client.createCollection(db._self, collectionDefinition, function (err, collection) {
+                    assert.equal(err, undefined, "error creating collection");
+
+                    client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
+                        assert.equal(err, undefined, "error creating document");
+
+                        global.originalFunc = request._createRequestObjectStub;
+                        global.counter = 0;
+
+                        request._createRequestObjectStub = mockCreateRequestObjectForDefaultRetryStub
+
+                        client.readDocument(createdDocument._self, function (err, readDocument) {
+                            assert.equal(readDocument.id, documentDefinition.id, "invalid document id")
+                            assert.equal(global.counter, 5, "invalid number of retries")
+
+                            request._createRequestObjectStub = global.originalFunc;
+
+                            done();
+                        });
                     });
                 });
             });

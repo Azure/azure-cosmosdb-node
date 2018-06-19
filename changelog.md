@@ -1,3 +1,20 @@
+## Changes in 1.14.4 : ##
+- npm documentation fixed.
+
+## Changes in 1.14.3 : ##
+- Added support for default retries on connection issues.
+- Added support to read collection change feed.
+- Fixed session consistency bug that intermittently caused "read session not available".
+- Added support for query metrics.
+- Modified http Agent's maximum number of connections.
+
+## Changes in 1.14.2 : ##
+- Updated documentation to use Azure Cosmos DB.
+- Added Support for proxyUrl setting in ConnectionPolicy.
+
+## Changes in 1.14.1 : ##
+- Minor fix for case sensitive file systems.
+
 ## Changes in 1.14.0 : ##
 - Adds support for Session Consistency.
 - This SDK version requires the latest version of Azure Cosmos DB Emulator available for download from https://aka.ms/cosmosdb-emulator.
@@ -24,7 +41,7 @@
 ## Changes in 1.11.0 : ##
 - Added the support for aggregation queries (COUNT, MIN, MAX, SUM, and AVG).
 - Added the option for controlling degree of parallelism for cross partition queries.
-- Added the option for disabling SSL verification when running against DocumentDB Emulator.
+- Added the option for disabling SSL verification when running against Emulator.
 - Lowered minimum throughput on partitioned collections from 10,100 RU/s to 2500 RU/s.
 - Fixed the continuation token bug for single partition collection (github #107).
 - Fixed the executeStoredProcedure bug in handling 0 as single param (github #155).
@@ -47,12 +64,12 @@
 ## Changes in 1.9.0 : ##
 
 - Added retry policy support for throttled requests. (Throttled requests receive a request rate too large exception, error code 429.)
-  By default, DocumentDB retries nine times for each request when error code 429 is encountered, honoring the retryAfter time in the response header.
+  By default, DocumentClient retries nine times for each request when error code 429 is encountered, honoring the retryAfter time in the response header.
   A fixed retry interval time can now be set as part of the RetryOptions property on the ConnectionPolicy object if you want to ignore the retryAfter time returned by server between the retries.
-  DocumentDB now waits for a maximum of 30 seconds for each request that is being throttled (irrespective of retry count) and returns the response with error code 429.
+  DocumentClient now waits for a maximum of 30 seconds for each request that is being throttled (irrespective of retry count) and returns the response with error code 429.
   This time can also be overriden in the RetryOptions property on ConnectionPolicy object.
 
-- DocumentDB now returns x-ms-throttle-retry-count and x-ms-throttle-retry-wait-time-ms as the response headers in every request to denote the throttle retry count and the cummulative time the request waited between the retries.
+- DocumentClient now returns x-ms-throttle-retry-count and x-ms-throttle-retry-wait-time-ms as the response headers in every request to denote the throttle retry count and the cummulative time the request waited between the retries.
 
 - The RetryOptions class was added, exposing the RetryOptions property on the ConnectionPolicy class that can be used to override some of the default retry options.
 
@@ -80,7 +97,7 @@
 
 ## Changes in 1.5.4 : ##
 
-- Dedicated HTTPS Agent: Avoid modifying the global agent for DocumentDB purposes. Use a dedicated agent for all of the lib’s requests.
+- Dedicated HTTPS Agent: Avoid modifying the global. Use a dedicated agent for all of the lib’s requests.
 
 ## Changes in 1.5.3 : ##
 

@@ -69,9 +69,7 @@ var EndpointDiscoveryRetryPolicy = Base.defineClass(
     },
     {
         maxRetryAttemptCount : 120,
-        retryAfterInMilliseconds : 1000,
-        FORBIDDEN_STATUS_CODE : 403,
-        WRITE_FORBIDDEN_SUB_STATUS_CODE : 3
+        retryAfterInMilliseconds : 1000
     }
 );
 //SCRIPT END

@@ -74,9 +74,6 @@ var ResourceThrottleRetryPolicy = Base.defineClass(
             }
             return callback(false);
         }
-    },
-    {
-        THROTTLE_STATUS_CODE: 429
     }
 );
 //SCRIPT END

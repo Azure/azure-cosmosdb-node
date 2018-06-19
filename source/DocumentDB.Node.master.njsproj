@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="Gruntfile.js" />
     <Compile Include="index.js" />
+    <Compile Include="lib\defaultRetryPolicy.js" />
     <Compile Include="lib\endpointDiscoveryRetryPolicy.js" />
     <Compile Include="lib\globalEndpointManager.js" />
     <Compile Include="lib\helper.js" />
@@ -39,6 +40,13 @@
     <Compile Include="lib\queryExecutionContext\proxyQueryExecutionContext.js" />
     <Compile Include="lib\queryExecutionContext\defaultQueryExecutionContext.js" />
     <Compile Include="lib\queryExecutionContext\headerUtils.js" />
+    <Compile Include="lib\queryMetrics\clientSideMetrics.js" />
+    <Compile Include="lib\queryMetrics\queryMetrics.js" />
+    <Compile Include="lib\queryMetrics\queryMetricsConstants.js" />
+    <Compile Include="lib\queryMetrics\queryMetricsUtils.js" />
+    <Compile Include="lib\queryMetrics\queryPreparationTimes.js" />
+    <Compile Include="lib\queryMetrics\runtimeExecutionTimes.js" />
+    <Compile Include="lib\queryMetrics\timeSpan.js" />
     <Compile Include="lib\range.js" />
     <Compile Include="lib\resourceId.js" />
     <Compile Include="lib\retryOptions.js" />
@@ -58,6 +66,9 @@
       <TestFramework>Mocha</TestFramework>
     </Compile>
     <Compile Include="test\encodingTests.js">
+      <TestFramework>Mocha</TestFramework>
+    </Compile>
+    <Compile Include="test\queryMetricsTests.js">
       <TestFramework>Mocha</TestFramework>
     </Compile>
     <Compile Include="test\queryTests.js">
@@ -137,6 +148,7 @@
   <ItemGroup>
     <Folder Include="lib" />
     <Folder Include="lib\hash" />
+    <Folder Include="lib\queryMetrics\" />
     <Folder Include="lib\routing\" />
     <Folder Include="lib\queryExecutionContext\" />
     <Folder Include="test" />

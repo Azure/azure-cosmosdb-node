@@ -70,8 +70,11 @@ var SessionReadRetryPolicy = Base.defineClass(
                                 var newUrl = url.parse(writeEndpoint);
                                 return callback(true, newUrl);
                             } else {
-                                console.log("Clear the the token for named base request");
-                                that.request.client.clearSessionToken(that.request.path);
+                                console.log(Base.isLinkNameBased(that.request.path));
+                                if (Base.isLinkNameBased(that.request.path)) {
+                                    console.log("Clear the the token for named base request");
+                                    that.request.client.clearSessionToken(that.request.path);
+                                }
                                 return callback(false);
                             }
                         });
@@ -84,9 +87,7 @@ var SessionReadRetryPolicy = Base.defineClass(
     },
     {
         maxRetryAttemptCount: 1,
-        retryAfterInMilliseconds: 0,
-        NOT_FOUND_STATUS_CODE: 404,
-        READ_SESSION_NOT_AVAILABLE_SUB_STATUS_CODE: 1002
+        retryAfterInMilliseconds: 0
     }
 );
 //SCRIPT END
