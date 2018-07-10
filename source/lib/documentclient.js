@@ -2576,11 +2576,14 @@ var DocumentClient = Base.defineClass(
         applySessionToken: function (path, reqHeaders) {
             var request = this.getSessionParams(path);
 
-            if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken])
+            if (reqHeaders && reqHeaders[Constants.HttpHeaders.SessionToken]) {
+                if (this.isMasterResource(request.resourceType))
+                    delete reqHeaders[Constants.HttpHeaders.SessionToken]
                 return;
+            }
 
             var sessionConsistency = reqHeaders[Constants.HttpHeaders.ConsistencyLevel];
-            if (!sessionConsistency)
+            if (!sessionConsistency || this.isMasterResource(request.resourceType))
                 return;
 
             if (request['resourceAddress']) {

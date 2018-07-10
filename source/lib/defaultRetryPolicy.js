@@ -1,4 +1,4 @@
-﻿/*
+/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -23,7 +23,8 @@ SOFTWARE.
 
 "use strict";
 
-var Base = require("./base");
+var Base = require("./base"),
+    StatusCodes = require("./statusCodes").StatusCodes;
 
 //SCRIPT START
 /**
@@ -59,7 +60,7 @@ var DefaultRetryPolicy = Base.defineClass(
         this.WindowsNoRouteTohost = 10065;
 
         //Linux Error Codes
-        this.LinuxConnectionReset = "ECONNRESET";
+        this.LinuxConnectionReset = StatusCodes.ConnectionReset;
 
         this.CONNECTION_ERROR_CODES = [
             this.WindowsInterruptedFunctionCall,

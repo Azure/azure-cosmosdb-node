@@ -25,6 +25,7 @@ SOFTWARE.
 
 var assert = require("assert"),
     CollectionRoutingMap = require("../lib/routing/inMemoryCollectionRoutingMap"),
+    PartitionKeyRangeCache = require("../lib/routing/partitionKeyRangeCache"),
     _ = require("underscore");
 
 var QueryRange = CollectionRoutingMap.QueryRange;
@@ -158,6 +159,74 @@ describe("InMemoryCollectionRoutingMap Tests", function () {
             assert.equal(2, overlappingPartitionKeyRanges.length)
             assert.equal("1", overlappingPartitionKeyRanges[0].id)
             assert.equal("2", overlappingPartitionKeyRanges[1].id)
+        });
+
+        it("validate gone ranges filtering", function () {
+            var partitionKeyRanges =
+                [
+                    {
+                        Id: "2",
+                        MinInclusive: "0000000050",
+                        MaxExclusive: "0000000070",
+                        Parents: []
+                    },
+                    {
+                        Id: "0",
+                        MinInclusive: "",
+                        MaxExclusive: "0000000030"
+                    },
+                    {
+                        Id: "1",
+                        MinInclusive: "0000000030",
+                        MaxExclusive: "0000000050"
+                    },
+                    {
+                        Id: "3",
+                        MinInclusive: "0000000070",
+                        MaxExclusive: "FF",
+                        Parents: []
+                    }
+                ];
+
+            // first verify nothing is filtered out since there is no children ranges
+            var partitionKeyRangeCache = new PartitionKeyRangeCache({});
+            var filteredRanges = partitionKeyRangeCache._discardGoneRanges(partitionKeyRanges);
+            assert.equal(4, filteredRanges.length);
+            assert.equal("2", filteredRanges[0].Id);
+            assert.equal("0", filteredRanges[1].Id);
+            assert.equal("1", filteredRanges[2].Id);
+            assert.equal("3", filteredRanges[3].Id);
+
+            // add some children partition key ranges with parents Ids
+            // e.g., range 0 was split in to range 4 and 5, and then range 4 was split into range 6 and 7
+            partitionKeyRanges.push({
+                Id: "6",
+                MinInclusive: "",
+                MaxExclusive: "0000000010",
+                Parents: ["0", "4"]
+            })
+            partitionKeyRanges.push({
+                Id: "7",
+                MinInclusive: "0000000010",
+                MaxExclusive: "0000000020",
+                Parents: ["0", "4"]
+            })
+            partitionKeyRanges.push({
+                Id: "5",
+                MinInclusive: "0000000020",
+                MaxExclusive: "0000000030",
+                Parents: ["0"]
+            })
+
+            // verify the filtered range list has children ranges and the parent Ids are discarded
+            filteredRanges = partitionKeyRangeCache._discardGoneRanges(partitionKeyRanges);
+            assert.equal(6, filteredRanges.length);
+            assert.equal("2", filteredRanges[0].Id);
+            assert.equal("1", filteredRanges[1].Id);
+            assert.equal("3", filteredRanges[2].Id);
+            assert.equal("6", filteredRanges[3].Id);
+            assert.equal("7", filteredRanges[4].Id);
+            assert.equal("5", filteredRanges[5].Id);
         });
 
     });

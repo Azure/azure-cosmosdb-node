@@ -44,11 +44,6 @@ describe("Session Token", function () {
     var collectionDefinition = { 'id': collectionId, 'partitionKey': { 'paths': ['/id'], 'kind': 'Hash' } };
     var collectionOptions = { 'offerThroughput': 10100 };
 
-    var getSpy = sinon.spy(client, 'get');
-    var postSpy = sinon.spy(client, 'post');
-    var putSpy = sinon.spy(client, 'put');
-    var deleteSpy = sinon.spy(client, 'delete');
-
     var deleteDatabases = function (done) {
 
         client.queryDatabases("SELECT * FROM root r WHERE r.id='" + databaseId + "'").toArray(function (err, databases) {
@@ -81,6 +76,11 @@ describe("Session Token", function () {
     }
 
     it("validate session tokens for sequence of opearations", function (done) {
+        var getSpy = sinon.spy(client, 'get');
+        var postSpy = sinon.spy(client, 'post');
+        var putSpy = sinon.spy(client, 'put');
+        var deleteSpy = sinon.spy(client, 'delete');
+
         var index1;
         var index2;
 
@@ -156,7 +156,7 @@ describe("Session Token", function () {
 
                                             client.deleteCollection(createdCollection._self, function (err, result) {
                                                 assert.equal(err, undefined, "error deleting collection");
-                                                assert.equal(deleteSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken], client.sessionContainer.getCombinedSessionToken(tokens));
+                                                assert.equal(deleteSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken], undefined);
                                                 assert.deepEqual(client.sessionContainer.collectionResourceIdToSessionTokens, {});
 
                                                 getSpy.restore();
@@ -267,6 +267,39 @@ describe("Session Token", function () {
                                 assert.equal(err, undefined, "error reading collection");
                                 assert.equal(client.getSessionToken(collection._self), "");
                                 assert.notEqual(client2.getSessionToken(collection._self), "");
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    it("validate that session token is removed for master resource requests", function (done) {
+        var getSpy = sinon.spy(client, 'get');
+        client.createDatabase(databaseBody, function (err, database) {
+            assert.equal(err, undefined, "error creating database");
+
+            client.createCollection(database._self, collectionDefinition, collectionOptions, function (err, createdCollection) {
+                assert.equal(err, undefined, "error creating collection");
+
+                client.createDocument(createdCollection._self, { "id": "1" }, function (err, createdDocument) {
+                    assert.equal(err, undefined, "error creating document");
+
+                    client.readDocument(createdDocument._self, { 'partitionKey': '1' }, function (err, readDocument) {
+                        console.log(err)
+                        assert.equal(err, undefined, "error reading document");
+                        assert.notEqual(getSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken], undefined);
+
+                        client.readCollection(createdCollection._self, function (err, readCollection) {
+                            assert.equal(err, undefined, "error reading collection");
+                            assert.equal(getSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken], undefined);
+
+                            client.readDocument(createdDocument._self, { 'partitionKey': '1' }, function (err, readDocument) {
+                                assert.equal(err, undefined, "error reading document");
+                                assert.notEqual(getSpy.lastCall.args[2][Constants.HttpHeaders.SessionToken], undefined);
+                                getSpy.restore();
                                 done();
                             });
                         });

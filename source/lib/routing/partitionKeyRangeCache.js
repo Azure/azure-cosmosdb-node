@@ -68,8 +68,10 @@ var PartitionKeyRangeCache = Base.defineClass(
                                 return callback(err, undefined);
                             }
 
+                            var ranges = that._discardGoneRanges(resources);
+                            
                             collectionRoutingMap = CollectionRoutingMapFactory.createCompleteRoutingMap(
-                                resources.map(function (r) { return [r, true]; }),
+                                ranges.map(function (r) { return [r, true]; }),
                                 collectionId);
 
                             that.collectionRoutingMapByCollectionId[collectionId] = collectionRoutingMap;
@@ -91,6 +93,20 @@ var PartitionKeyRangeCache = Base.defineClass(
                 callback(undefined, collectionRoutingMap);
             }
         }, 
+
+        _discardGoneRanges: function (ranges) {
+            // A split may complete between the readPartitionKeyRanges query page responses.
+            // We need to discard the old parent ranges which are replaced with new children
+            // ranges in the later pages.
+            var parentIds = {};
+            ranges.forEach(range => {
+                if (range.Parents !== undefined && range.Parents != null && Array.isArray(range.Parents)) {
+                    range.Parents.forEach(parentId => { parentIds[parentId] = true; });
+                }
+            });
+            var filteredRanges = ranges.filter(range => { return !(range.Id in parentIds); });
+            return filteredRanges;
+        },
 
         /**
          * Given the query ranges and a collection, invokes the callback on the list of overlapping partition key ranges

@@ -8,7 +8,9 @@ These samples were built using the [Node.js Tools for Visual Studio](https://git
 Before you can run any of the samples you do need an active Azure Cosmos DB account. 
 So head over to [How to create a Azure Cosmos DB database account](https://docs.microsoft.com/azure/cosmos-db/create-sql-api-nodejs#create-a-database-account) and see how to setup your account.
 
-Once you have your Azure Cosmos DB account setup, you can run these files using Visual Studio if you are using it, or by simply running **node app.js**
+Once you have your Azure Cosmos DB account setup, edit the file "Shared/config.js" to use your account's endpoint and authKey.
+
+You can then run these files using Visual Studio if you are using it, or by simply running **node app.js**
 
 ## Description  ##
 

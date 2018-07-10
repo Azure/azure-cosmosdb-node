@@ -1,4 +1,4 @@
-﻿/*
+/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -88,7 +88,7 @@ describe("Range Tests", function () {
                 function () {
                     r.compareFunction = 1;
                 },
-                /Can't add property compareFunction, object is not extensible/
+                /Can.{1,2}t add property compareFunction, object is not extensible/
             );
 
             done();
