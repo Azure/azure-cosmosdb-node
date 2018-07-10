@@ -1,4 +1,4 @@
-﻿/*
+/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -27,7 +27,8 @@ var lib = require("../lib/"),
     assert = require("assert"),
     testConfig = require("./_testConfig"),
     sinon = require("sinon"),
-    Stream = require("stream");
+    Stream = require("stream"),
+    StatusCodes = require('../lib/statusCodes').StatusCodes;
 
 var Base = lib.Base,
     DocumentDBClient = lib.DocumentClient,
@@ -2796,7 +2797,7 @@ describe("NodeJS CRUD Tests", function () {
                             client.executeStoredProcedure(getStoredProcedureLink(true, db, collection, retrievedSproc), undefined, requestOptions, function (err, result, headers) {
                                 assert.equal(err, undefined, "error executing stored procedure");
                                 assert.equal(result, 'Success!');
-                                assert.equal(headers[Constants.HttpHeaders.ScriptLogResults], "The value of x is 1.");
+                                assert.equal(headers[Constants.HttpHeaders.ScriptLogResults], encodeURIComponent("The value of x is 1."));
 
                                 var requestOptions = { enableScriptLogging: false };
                                 client.executeStoredProcedure(getStoredProcedureLink(true, db, collection, retrievedSproc), undefined, requestOptions, function (err, result, headers) {
@@ -3590,12 +3591,29 @@ describe("NodeJS CRUD Tests", function () {
             callback({ code: 429, body: "Request rate is too large", retryAfterInMilliseconds: retryAfterInMilliseconds });
         }
 
+        var mockCreateRequestObjectForDefaultRetryCounter = 0;
+        var mockCreateRequestObjectForDefaultRetryOriginalFunc = null;
         var mockCreateRequestObjectForDefaultRetryStub = function (connectionPolicy, requestOptions, callback) {
-            global.counter++;
-            if (global.counter % 5 == 0)
-                return global.originalFunc(connectionPolicy, requestOptions, callback)
+            mockCreateRequestObjectForDefaultRetryCounter++;
+            if (mockCreateRequestObjectForDefaultRetryCounter % 5 === 0)
+                return mockCreateRequestObjectForDefaultRetryOriginalFunc(connectionPolicy, requestOptions, callback)
             else
-                return callback({ code: "ECONNRESET", body: "Connection was reset" })
+                return callback({ code: StatusCodes.ConnectionReset, body: "Connection is reset" })
+        }
+
+        var mockGetDatabaseAccountCounter = 0;
+        var mockCreateRequestObjectForSystemErrorsOriginalFunc = null;
+        var mockGetDatbaseAccountForSystemErrors = function (options, callback) {
+            mockGetDatabaseAccountCounter++;
+            var databaseAccount = new AzureDocuments.DatabaseAccount();
+            callback(undefined, databaseAccount);
+        }
+        var mockCreateRequestObjectForSystemErrorsStub = function (connectionPolicy, requestOptions, callback) {
+            if (mockGetDatabaseAccountCounter >= 2) {
+                return mockCreateRequestObjectForSystemErrorsOriginalFunc(connectionPolicy, requestOptions, callback);
+            } else {
+                return callback({ code: StatusCodes.ConnectionRefused, body: "Connection was refused" });
+            }
         }
                
         it("throttle retry policy test default retryAfter", function (done) {
@@ -3699,16 +3717,16 @@ describe("NodeJS CRUD Tests", function () {
                 client.createCollection(db._self, collectionDefinition, function (err, collection) {
                     assert.equal(err, undefined, "error creating collection");
 
-                    global.originalFunc = request._createRequestObjectStub;
-                    global.counter = 0;
+                    mockCreateRequestObjectForDefaultRetryOriginalFunc = request._createRequestObjectStub;
+                    mockCreateRequestObjectForDefaultRetryCounter = 0;
 
                     request._createRequestObjectStub = mockCreateRequestObjectForDefaultRetryStub
 
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
-                        assert.equal(err.code, "ECONNRESET", "invalid error code");
-                        assert.equal(global.counter, 6, "invalid number of retries")
+                        assert.equal(err.code, StatusCodes.ConnectionReset, "invalid error code");
+                        assert.equal(mockCreateRequestObjectForDefaultRetryCounter, 6, "invalid number of retries");
 
-                        request._createRequestObjectStub = global.originalFunc;
+                        request._createRequestObjectStub = mockCreateRequestObjectForDefaultRetryOriginalFunc;
 
                         done();
                     });
@@ -3728,16 +3746,51 @@ describe("NodeJS CRUD Tests", function () {
                     client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
                         assert.equal(err, undefined, "error creating document");
 
-                        global.originalFunc = request._createRequestObjectStub;
-                        global.counter = 0;
+                        mockCreateRequestObjectForDefaultRetryOriginalFunc = request._createRequestObjectStub;
+                        mockCreateRequestObjectForDefaultRetryCounter = 0;
 
                         request._createRequestObjectStub = mockCreateRequestObjectForDefaultRetryStub
 
                         client.readDocument(createdDocument._self, function (err, readDocument) {
-                            assert.equal(readDocument.id, documentDefinition.id, "invalid document id")
-                            assert.equal(global.counter, 5, "invalid number of retries")
+                            assert.equal(readDocument.id, documentDefinition.id, "invalid document id");
+                            assert.equal(mockCreateRequestObjectForDefaultRetryCounter, 5, "invalid number of retries");
 
-                            request._createRequestObjectStub = global.originalFunc;
+                            request._createRequestObjectStub = mockCreateRequestObjectForDefaultRetryOriginalFunc;
+
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it("endpointDiscoveryRetryPolicy should handle ECONNREFUSED", function (done) {
+            var client = new DocumentDBClient(host, { masterKey: masterKey });
+
+            client.createDatabase({ "id": "sample database" }, function (err, db) {
+                assert.equal(err, undefined, "error creating database");
+
+                client.createCollection(db._self, collectionDefinition, function (err, collection) {
+                    assert.equal(err, undefined, "error creating collection");
+
+                    client.createDocument(collection._self, documentDefinition, function (err, createdDocument, responseHeaders) {
+                        assert.equal(err, undefined, "error creating document");
+
+                        var originalGetDatabaseAccount = client.getDatabaseAccount;
+                        client.getDatabaseAccount = mockGetDatbaseAccountForSystemErrors;
+
+                        mockCreateRequestObjectForSystemErrorsOriginalFunc = request._createRequestObjectStub;
+                        mockCreateRequestObjectForDefaultRetryCounter = 0;
+
+                        request._createRequestObjectStub = mockCreateRequestObjectForSystemErrorsStub
+
+                        client.readDocument(createdDocument._self, function (err, readDocument) {
+                            console.log(JSON.stringify(err, null, " "));
+                            assert.equal(err, undefined, "error creating document");
+                            assert.equal(readDocument.id, documentDefinition.id, "invalid document id");
+
+                            request._createRequestObjectStub = mockCreateRequestObjectForSystemErrorsOriginalFunc;
+                            client.getDatabaseAccount = originalGetDatabaseAccount;
 
                             done();
                         });

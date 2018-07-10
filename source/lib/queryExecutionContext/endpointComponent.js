@@ -201,8 +201,7 @@ var AggregateEndpointComponent = Base.defineClass(
                         var itemValue = undefined;
                         // Get the value of the first property if it exists
                         if (resource && Object.keys(resource).length > 0) {
-                            var key = Object.keys(resource)[0];
-                            itemValue = resource[key];
+                            itemValue = resource['item'];
                         }
                         aggregator.aggregate(itemValue);
                     });

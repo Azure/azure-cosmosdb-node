@@ -1,4 +1,4 @@
-﻿/*
+/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -50,7 +50,11 @@ var StatusCodes = {
 
     //Operation pause and cancel. These are FAKE status codes for QOS logging purpose only.
     "OperationPaused": 1200,
-    "OperationCancelled": 1201
+    "OperationCancelled": 1201,
+
+    // Node System Error Codes
+    "ConnectionRefused": "ECONNREFUSED",
+    "ConnectionReset": "ECONNRESET"
 };
 
 var SubStatusCodes = {

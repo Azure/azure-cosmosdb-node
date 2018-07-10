@@ -1,4 +1,4 @@
-﻿/*
+/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -72,7 +72,10 @@ var RetryUtility = {
             if (err) {
                 var retryPolicy = null;
                 headers = headers || {};
-                if (err.code === StatusCodes.Forbidden && err.substatus === SubStatusCodes.WriteForbidden) {
+                // Forbidden errors mean that we might be connecting to the wrong endpoint (failover/etc.), so refresh the endpoints
+                // System errors mean that we can't reach the endpoint, so refresh the endpoints (unless the failure happened while refreshing the endpoints)
+                if ((err.code === StatusCodes.Forbidden && err.substatus === SubStatusCodes.WriteForbidden)
+                    || (requestOptions.path !== "" && typeof err.code === "string" && (err.code === StatusCodes.ConnectionRefused))) {
                     retryPolicy = endpointDiscoveryRetryPolicy;
                 } else if (err.code === StatusCodes.TooManyRequests) {
                     retryPolicy = resourceThrottleRetryPolicy;

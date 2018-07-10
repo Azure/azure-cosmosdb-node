@@ -1,4 +1,4 @@
-﻿/*
+/*
 The MIT License (MIT)
 Copyright (c) 2017 Microsoft Corporation
 
@@ -23,7 +23,8 @@ SOFTWARE.
 
 "use strict";
 
-var Base = require("./base");
+var Base = require("./base"),
+    StatusCodes = require("./statusCodes").StatusCodes;
 
 //SCRIPT START
 /**
@@ -54,7 +55,11 @@ var EndpointDiscoveryRetryPolicy = Base.defineClass(
             if (err) {
                 if (this.currentRetryAttemptCount < this._maxRetryAttemptCount && this.globalEndpointManager.enableEndpointDiscovery) {
                     this.currentRetryAttemptCount++;
-                    console.log("Write region was changed, refreshing the regions list from database account and will retry the request.");
+                    if (err.code === StatusCodes.Forbidden) {
+                        console.log("Write region was changed, refreshing the regions list from database account and will retry the request.");
+                    } else if (err.code === StatusCodes.ConnectionRefused) {
+                        console.log("Error trying to connect, refreshing the regions list from database account and will retry the request.");
+                    }
                     var that = this;
                     this.globalEndpointManager.refreshEndpointList(function (writeEndpoint, readEndpoint) {
                         that.globalEndpointManager.setWriteEndpoint(writeEndpoint);

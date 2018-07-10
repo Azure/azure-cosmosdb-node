@@ -1,3 +1,6 @@
+## Changes in 1.14.5 : ##
+- Added endpoint retry on ECONNREFUSED errors to help with failover
+
 ## Changes in 1.14.4 : ##
 - npm documentation fixed.
 

@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 var lib = require("../lib/"),
     assert = require("assert"),
@@ -85,7 +85,7 @@ describe("ResourceLink Trimming of leading and trailing slashes", function () {
 
 describe("Test Query Metrics On Single Partition Collection", function () {
     var client = new DocumentDBClient(host, { masterKey: masterKey });
-    var databaseId = "testDatabase";
+    var databaseId = "testDatabase2";
     var collectionId = "testCollection";
     
     var deleteDatabases = function (done) {
@@ -137,6 +137,7 @@ describe("Test Query Metrics On Single Partition Collection", function () {
                     var queryIterator = client.queryDocuments(collectionLink, query, queryOptions);
                     
                     var executeNextCallback = function (err, results, headers) {
+                        assert.equal(err, undefined, "Query should not return an error");
                         if (results === undefined) {
                             // no more results
                             return done();
