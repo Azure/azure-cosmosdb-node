@@ -28,7 +28,8 @@ var Documents = require("./documents")
     , https = require("https")
     , url = require("url")
     , querystring = require("querystring")
-    , RetryUtility = require("./retryUtility");
+    , RetryUtility = require("./retryUtility")
+    , log = require("./log")("request");
 
 //----------------------------------------------------------------------------
 // Utility methods
@@ -54,6 +55,7 @@ function parse(urlString) { return url.parse(urlString); }
 
 function createRequestObject(connectionPolicy, requestOptions, callback) {
     function onTimeout() {
+        log.error("[onTimeout] Timeout occurred")
         httpsRequest.abort();
     }
 
