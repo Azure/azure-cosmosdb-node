@@ -90,7 +90,7 @@ var RetryUtility = {
                     if (!shouldRetry) {
                         headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
                         headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
-                        log.error("[apply] ")
+                        log.error("[apply] Cannot retry, %o", err);
                         return callback(err, response, headers);
                     } else {
                         setTimeout(function () {

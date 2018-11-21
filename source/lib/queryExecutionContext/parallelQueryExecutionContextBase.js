@@ -35,7 +35,8 @@ var Base = require("../base")
     , semaphore = require("semaphore")
     , StatusCodes = require("../statusCodes").StatusCodes
     , SubStatusCodes = require("../statusCodes").SubStatusCodes
-    , assert = require('assert');
+    , assert = require('assert')
+    , log = require("../log")("query");
 
 var QueryRange = InMemoryCollectionRoutingMap.QueryRange;
 var _PartitionKeyRange = InMemoryCollectionRoutingMap._PartitionKeyRange;
@@ -92,8 +93,10 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
             // ensure the lock is released after finishing up
             that._onTargetPartitionRanges(function (err, targetPartitionRanges) {
                 if (err) {
+                    log.error("[_onTargetPartitionRanges] Error: %o", err);
                     that.err = err;
                     // release the lock
+                    log.debug("[_onTargetPartitionRanges] semaphore released. Count before release: %d", sem.queue.length);
                     that.sem.leave();
                     return;
                 }
@@ -131,7 +134,9 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                             filteredPartitionKeyRanges = filteredPartitionKeyRanges.slice(1);
                         }
                     } catch (e) {
+                        log.error("[_onTargetPartitionRanges] Error filtering partition key ranges: %o", e);
                         that.err = e;
+                        log.debug("[_onTargetPartitionRanges] semaphore released. Count before release: %d", that.sem.queue.length);
                         that.sem.leave();
                     }
                 } else {
@@ -144,7 +149,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                         // no async callback
                         targetPartitionQueryExecutionContextList.push(
                             that._createTargetPartitionQueryExecutionContext(partitionTargetRange)
-                        );
+                        ); 
                     }
                 );
                 
@@ -172,16 +177,19 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                                         that.err = e;
                                     }
                                 } finally {
+                                    log.debug("[createDocumentProducersAndFillUpPriorityQueueFunc] parallelism semaphore released. Count before release: %d", parallelismSem.queue.length);
                                     parallelismSem.leave();
                                     that._decrementInitiationLock();
                                 }
                             });
                         }
+                        log.debug("[createDocumentProducersAndFillUpPriorityQueueFunc] parallelism semaphore taken. Count before taking: %d", parallelismSem.queue.length);
                         parallelismSem.take(throttledFunc);
                     }
                 );
             });
         };
+        log.debug("[createDocumentProducersAndFillUpPriorityQueueFunc] semaphore taken. Count before taking: %d", this.sem.queue.length);
         this.sem.take(createDocumentProducersAndFillUpPriorityQueueFunc);
     },
 
@@ -215,6 +223,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
             // if waitingForInternalExecutionContexts reaches 0 releases the semaphore and changes the state
             this.waitingForInternalExecutionContexts = this.waitingForInternalExecutionContexts - 1;
             if (this.waitingForInternalExecutionContexts === 0) {
+                log.debug("[createDocumentProducersAndFillUpPriorityQueueFunc] semaphore released. Count before release: %d", this.sem.queue.length);
                 this.sem.leave();
                 if (this.orderByPQ.size() === 0) {
                     this.state = ParallelQueryExecutionContextBase.STATES.inProgress;
@@ -269,7 +278,8 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
             var afterReplacementRanges = function (err, replacementPartitionKeyRanges) {
                 if (err) {
                     that.err = err;
-                    return;
+                    log.error("[_repairExecutionContext] Error: %o", that.err);
+                    return originFunction();
                 }
                 var replacementDocumentProducers = [];
                 // Create the replacement documentProducers
@@ -286,7 +296,8 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                         if (err) {
                             // Something actually bad happened
                             that.err = err;
-                            return;
+                            log.error("[_repairExecutionContext] Error: %o", that.err);
+                            return originFunction();
                         } else if (afterItem === undefined) {
                             // no more results left in this document producer, so we don't enqueue it
                         } else {
@@ -334,12 +345,14 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
             documentProducer.current(function (err, element) {
                 if (err) {
                     if (that._needPartitionKeyRangeCacheRefresh(err)) {
+                        log.info("[_repairExecutionContextIfNeeded] Split occurred. Attempting to repair.")
                         // Split has happened so we need to repair execution context before continueing
                         return that._repairExecutionContext(ifCallback);
                     } else {
                         // Something actually bad happened ...
                         that.err = err;
-                        return;
+                        log.error("[_repairExecutionContextIfNeeded] Error: %o", that.err);
+                        return ifCallback();
                     }
                 } else {
                     // Just continue with the original execution context
@@ -361,10 +374,12 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
             }
 
             var that = this;
+            log.debug("[nextItem] semaphore taken. Count before taking: %d", this.sem.queue.length);
             this.sem.take(function () {
                 // NOTE: lock must be released before invoking quitting
                 if (that.err) {
                     // release the lock before invoking callback
+                    log.debug("[nextItem] Error occurred. Semaphore released. Count before release: %d", that.sem.queue.length);
                     that.sem.leave();
                     // if there is a prior error return error
                     return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
@@ -374,12 +389,14 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                     // there is no more results
                     that.state = ParallelQueryExecutionContextBase.STATES.ended;
                     // release the lock before invoking callback
+                    log.debug("[nextItem] Queue is empty. Semaphore released. Count before release: %d", that.sem.queue.length);
                     that.sem.leave();
                     return callback(undefined, undefined, that._getAndResetActiveResponseHeaders());
                 }
                 
                 var ifCallback = function () {
                     // Release the semaphore to avoid deadlock
+                    log.debug("[nextItem] IfCallback called. Semaphore released. Count before release: %d", that.sem.queue.length);
                     that.sem.leave();
                     // Reexcute the function
                     return that.nextItem(callback);
@@ -392,6 +409,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                         // set that error and return error
                         that.err = e;
                         // release the lock before invoking callback
+                        log.debug("[nextItem] Error occurred in elseCallback. Semaphore released. Count before release: %d", that.sem.queue.length);
                         that.sem.leave();
                         return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
                     }
@@ -408,7 +426,9 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                                     "Extracted DocumentProducer from the priority queue fails to get the buffered item. Due to %s",
                                     JSON.stringify(err)));
                             // release the lock before invoking callback
+                            log.debug("[nextItem] Error occurred fetching next item. Semaphore released. Count before release: %d", that.sem.queue.length);
                             that.sem.leave();
+                            log.error("[nextItem] Error occurred fetching next item. Error: %o", that.err);
                             return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
                         }
                         
@@ -421,7 +441,9 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                                 util.format(
                                     "Extracted DocumentProducer from the priority queue doesn't have any buffered item!"));
                             // release the lock before invoking callback
+                            log.debug("[nextItem] Error occurred. Item was undefined. Semaphore released. Count before release: %d", that.sem.queue.length);
                             that.sem.leave();
+                            log.error("[nextItem] Error occurred. Item was undefined. Error: %o: ", that.err);
                             return callback(that.err, undefined, that._getAndResetActiveResponseHeaders());
                         }
                         // we need to put back the document producer to the queue if it has more elements.
@@ -458,6 +480,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                                 }
                             } finally {
                                 // release the lock before returning
+                                log.debug("[nextItem] Completed current. Semaphore released. Count before release: %d", that.sem.queue.length);
                                 that.sem.leave();
                             }
                         });
@@ -482,6 +505,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
             }
 
             var that = this;
+            log.debug("[current] Semaphore taken. Count before being taken: %d", this.sem.queue.length);
             this.sem.take(function () {
                 try {
                     if (that.err) {
@@ -504,6 +528,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
 
                     that._repairExecutionContextIfNeeded(ifCallback, elseCallback);
                 } finally {
+                    log.debug("[current] Semaphore released. Count before release: %d", that.sem.queue.length);
                     that.sem.leave();
                 }
             });

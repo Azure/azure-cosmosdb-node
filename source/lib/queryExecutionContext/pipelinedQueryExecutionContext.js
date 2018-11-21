@@ -27,7 +27,8 @@ var Base = require("../base")
     , endpointComponent = require('./endpointComponent')
     , assert = require("assert")
     , PartitionedQueryExecutionContextInfoParser = require("./partitionedQueryExecutionContextInfoParser")
-    , HeaderUtils = require("./headerUtils");
+    , HeaderUtils = require("./headerUtils")
+    , log = require("../log")("query");
 
 var ParallelQueryExecutionContext = require("./parallelQueryExecutionContext")
     , OrderByQueryExecutionContext = require("./orderByQueryExecutionContext");
@@ -65,6 +66,7 @@ var PipelinedQueryExecutionContext = Base.defineClass(
         var sortOrders = PartitionedQueryExecutionContextInfoParser.parseOrderBy(partitionedQueryExecutionInfo);
         if (Array.isArray(sortOrders) && sortOrders.length > 0) {
             // Need to wrap orderby execution context in endpoint component, since the data is nested as a "payload" property.
+            log.info("[PipelinedQueryExecutionContext] Using order by component and execution context");
             this.endpoint = new OrderByEndpointComponent(
                 new OrderByQueryExecutionContext(
                     this.documentclient,
@@ -73,6 +75,7 @@ var PipelinedQueryExecutionContext = Base.defineClass(
                     this.options,
                     this.partitionedQueryExecutionInfo));
         } else {
+            log.info("[PipelinedQueryExecutionContext] Using parallel execution context");
             this.endpoint = new ParallelQueryExecutionContext(
                 this.documentclient,
                 this.collectionLink,
@@ -84,12 +87,14 @@ var PipelinedQueryExecutionContext = Base.defineClass(
         // If aggregate then add that to the pipeline
         var aggregates = PartitionedQueryExecutionContextInfoParser.parseAggregates(partitionedQueryExecutionInfo);
         if (Array.isArray(aggregates) && aggregates.length > 0) {
+            log.info("[PipelinedQueryExecutionContext] Using aggregate component: %o", aggregates);
             this.endpoint = new AggregateEndpointComponent(this.endpoint, aggregates);
         }
         
         // If top then add that to the pipeline
         var top = PartitionedQueryExecutionContextInfoParser.parseTop(partitionedQueryExecutionInfo);
         if (typeof (top) === 'number') {
+            log.info("[PipelinedQueryExecutionContext] Using top component: %d", top);
             this.endpoint = new TopEndpointComponent(this.endpoint, top);
         }
     },
