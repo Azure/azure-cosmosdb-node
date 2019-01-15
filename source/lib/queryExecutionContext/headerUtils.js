@@ -24,10 +24,9 @@ SOFTWARE.
 "use strict";
 
 var Base = require("../base")
-    , Constants = require("../constants")
-    , QueryMetrics = require("../queryMetrics/queryMetrics.js")
-    , assert = require("assert")
-    , util = require("util");
+    , Constants = require("../constants");
+
+var zero = require("../queryMetrics/queryMetrics").zero;
 
 //SCRIPT START
 var HeaderUtils = Base.defineClass(
@@ -53,9 +52,14 @@ var HeaderUtils = Base.defineClass(
         },
         
         getInitialHeader: function () {
+            if(!zero) {
+                // QueryMetrics.zero is undefined when the file loads, for some reason (maybe a circular dependency?)
+                // Adding this as a hack...
+                zero = require("../queryMetrics/queryMetrics").zero;
+            }
             var headers = {};
             headers[Constants.HttpHeaders.RequestCharge] = 0;
-            headers[Constants.HttpHeaders.QueryMetrics] = {};
+            headers[Constants.HttpHeaders.QueryMetrics] = {0: zero};
             return headers;
         },
         
@@ -65,7 +69,7 @@ var HeaderUtils = Base.defineClass(
             }
             
             if (headers[Constants.HttpHeaders.QueryMetrics] == undefined) {
-                headers[Constants.HttpHeaders.QueryMetrics] = QueryMetrics.zero;
+                headers[Constants.HttpHeaders.QueryMetrics] = {0: zero};
             }
             
             if (!toBeMergedHeaders) {

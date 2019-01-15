@@ -24,7 +24,8 @@ SOFTWARE.
 "use strict";
 
 var Base = require("../base")
-    , QueryMetricsUtils = require("./queryMetricsUtils.js");
+    , QueryMetricsUtils = require("./queryMetricsUtils")
+    , HeaderUtils = require("../queryExecutionContext/headerUtils");
 
 //SCRIPT START
 var ClientSideMetrics = Base.defineClass(
@@ -66,7 +67,7 @@ var ClientSideMetrics = Base.defineClass(
                 // Arguments was just a single array.
                 args = arguments[0];
             } else {
-                // Arugments was flat var args (arg0, arg1, ..)
+                // Arguments was flat var args (arg0, arg1, ..)
                 args = arguments;
             }
             
@@ -84,7 +85,7 @@ var ClientSideMetrics = Base.defineClass(
                     throw "clientSideMetrics has null or undefined item(s)";
                 }
 
-                requestCharge += clientSideMetrics._requestCharge;
+                requestCharge += HeaderUtils.getRequestChargeIfAny(clientSideMetrics._requestCharge);
             }
             
             return new ClientSideMetrics(requestCharge);

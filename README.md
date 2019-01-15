@@ -1,4 +1,6 @@
-# Microsoft Azure Cosmos DB Node.js SDK  
+# 🚨🚨🚨 This package has been renamed to [@azure/cosmos](https://www.npmjs.com/package/@azure/cosmos) and the code moved to [azure-cosmos-js](https://github.com/Azure/azure-cosmos-js#readme). 🚨🚨🚨
+
+# Microsoft Azure Cosmos DB Node.js SDK v1
 
 ![](https://img.shields.io/npm/v/documentdb.svg)
 ![](https://img.shields.io/npm/dm/documentdb.svg)
@@ -18,6 +20,7 @@ Useful links:
 - [API Documentation](http://azure.microsoft.com/en-us/develop/nodejs/)
 
 ## Installation
+
 
 ### Prerequisites
 
@@ -50,6 +53,16 @@ To use the SDK, first [create an account](https://docs.microsoft.com/en-us/azure
 When connecting to the [emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) from the SDK, SSL verification is disabled. 
 
 Follow these instructions to run the tests locally.
+
+## Traces
+
+The `documentdb` module support tracing via the [`debug`](https://www.npmjs.com/package/debug) module. Traces will go to stderr by default. To enable tracing, you can set the `DEBUG` environment variable in a variety of ways.
+
+- `documentdb:*` will output all logs. This can be verbose, so it's helpful to filter on log level.
+- `documentdb:<log level>:*` will output all traces for a given `<log level>` value. The valid levels are `error`, `warn`, `info`, and `debug`.
+- `documentdb:<log level>:<component>` will output all traces for a given `<log level>` and `<component>`. The valid components are `request` and `query`.
+
+You can combine filters via `,`. So if you wanted to have error info for all components, but only debug info for `query`, then you'd use `documentdb:error:*,documentdb:debug:query`.
 
 ## Tests
 

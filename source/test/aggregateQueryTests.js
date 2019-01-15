@@ -234,8 +234,9 @@ describe("NodeJS Aggregate Query Tests", function () {
             ////////////////////////////////
             // validate toArray()
             ////////////////////////////////
-            var toArrayVerifier = function (err, results) {
+            var toArrayVerifier = function (err, results, headers) {
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + JSON.stringify(err));
+                assert.notEqual(headers, undefined, "headers must not be undefined");
                 assert.equal(results.length, expectedResults.length, "invalid number of results");
                 assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
 
@@ -279,13 +280,14 @@ describe("NodeJS Aggregate Query Tests", function () {
             ////////////////////////////////
 
             var results = [];
-            var nextItemVerifier = function (err, item) {
+            var nextItemVerifier = function (err, item, headers) {
 
                 ////////////////////////////////
                 // validate current()
                 ////////////////////////////////
-                var currentVerifier = function (err, currentItem) {
+                var currentVerifier = function (err, currentItem, headers) {
                     assert.equal(err, undefined, "unexpected failure in fetching the results: " + JSON.stringify(err));
+                    assert.notEqual(headers, undefined, "headers must not be undefined");
                     assert.equal(item, currentItem, "current must give the previously item returned by nextItem");
 
                     if (currentItem === undefined) {
@@ -303,6 +305,7 @@ describe("NodeJS Aggregate Query Tests", function () {
                 };
 
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + JSON.stringify(err));
+                assert.notEqual(headers, undefined, "headers must not be undefined");
 
                 if (item === undefined) {
                     assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");

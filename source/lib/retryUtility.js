@@ -30,7 +30,8 @@ var Base = require("./base"),
     SessionReadRetryPolicy = require("./sessionReadRetryPolicy"),
     DefaultRetryPolicy = require("./defaultRetryPolicy"),
     StatusCodes = require("./statusCodes").StatusCodes,
-    SubStatusCodes = require("./statusCodes").SubStatusCodes;
+    SubStatusCodes = require("./statusCodes").SubStatusCodes,
+    log = require("./log")("request");
 
 //SCRIPT START
 var RetryUtility = {
@@ -68,6 +69,7 @@ var RetryUtility = {
     */
     apply: function (body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy, sessionReadRetryPolicy, defaultRetryPolicy, callback) {
         var that = this;
+        log.debug("[apply] Request Options: %o", requestOptions);
         var httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, function (err, response, headers) {
             if (err) {
                 var retryPolicy = null;
@@ -88,6 +90,7 @@ var RetryUtility = {
                     if (!shouldRetry) {
                         headers[Constants.ThrottleRetryCount] = resourceThrottleRetryPolicy.currentRetryAttemptCount;
                         headers[Constants.ThrottleRetryWaitTimeInMs] = resourceThrottleRetryPolicy.cummulativeWaitTimeinMilliseconds;
+                        log.error("[apply] Cannot retry, %o", err);
                         return callback(err, response, headers);
                     } else {
                         setTimeout(function () {

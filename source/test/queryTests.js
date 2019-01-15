@@ -18,10 +18,10 @@ describe("ResourceLink Trimming of leading and trailing slashes", function () {
     var collectionId = "testCollection";
 
     var deleteDatabases = function (done) {
-        client.readDatabases().toArray(function (err, databases) {
+        client.readDatabases().toArray(function (err, databases, headers) {
             if (err) {
-                console.log("error occured reading databases", err);
-                return done();
+                console.log("error occurred reading databases", err);
+                return done(err);
             }
 
             var index = databases.length;
@@ -33,6 +33,7 @@ describe("ResourceLink Trimming of leading and trailing slashes", function () {
                 index--;
                 if (database.id === databaseId) {
                     client.deleteDatabase(database._self, function (err, db) {
+                        if(err) done(err);
                     });
                 }
                 if (index === 0) {
@@ -65,8 +66,9 @@ describe("ResourceLink Trimming of leading and trailing slashes", function () {
                     var queryOptions = { "partitionKey": "pk" }
                     var queryIterator = client.queryDocuments(collectionLink, query, queryOptions);
 
-                    queryIterator.toArray(function (error, result) {
+                    queryIterator.toArray(function (error, result, headers) {
                         assert.equal(error, undefined);
+                        assert.notEqual(headers, undefined);
                         assert.equal(result[0]["id"], "myId");
                         done();
                     });
@@ -91,7 +93,7 @@ describe("Test Query Metrics On Single Partition Collection", function () {
     var deleteDatabases = function (done) {
         client.readDatabases().toArray(function (err, databases) {
             if (err) {
-                console.log("error occured reading databases", err);
+                console.log("error occurred reading databases", err);
                 return done();
             }
             

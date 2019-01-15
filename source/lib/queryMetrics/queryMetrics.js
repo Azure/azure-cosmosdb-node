@@ -404,8 +404,8 @@ var createFromDelimitedString = function (delimitedString, clientSideMetrics) {
 //SCRIPT END
 
 if (typeof exports !== "undefined") {
-    module.exports = QueryMetrics;
     QueryMetrics.zero = zero;
     QueryMetrics.createFromArray = createFromArray;
     QueryMetrics.createFromDelimitedString = createFromDelimitedString;
+    module.exports = QueryMetrics;
 }

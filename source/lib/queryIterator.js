@@ -25,7 +25,8 @@ SOFTWARE.
 
 var Base = require("./base"),
     Constants = require("./constants"),
-    ProxyQueryExecutionContext = require("./queryExecutionContext/proxyQueryExecutionContext");
+    ProxyQueryExecutionContext = require("./queryExecutionContext/proxyQueryExecutionContext"),
+    HeaderUtils = require("./queryExecutionContext/headerUtils");
 
 //SCRIPT START
 var QueryIterator = Base.defineClass(
@@ -103,6 +104,7 @@ var QueryIterator = Base.defineClass(
         toArray: function (callback) {
             this.reset();
             this.toArrayTempResources = [];
+            this.toArrayLastResHeaders = HeaderUtils.getInitialHeader();
             this._toArrayImplementation(callback);
         },
 
@@ -140,8 +142,8 @@ var QueryIterator = Base.defineClass(
                 if (err) {
                     return callback(err, undefined, headers);
                 }
-                // concatinate the results and fetch more
-                that.toArrayLastResHeaders = headers;
+                // concatenate the results and fetch more
+                HeaderUtils.mergeHeaders(that.toArrayLastResHeaders, headers);
 
                 if (resource === undefined) {
 

@@ -1,3 +1,8 @@
+## Changes in 1.15.0
+- Adds logging support
+- Fixes cross partition aggregate support
+- Fixes some cases where cross partition query silently failed
+
 ## Changes in 1.14.5 : ##
 - Added endpoint retry on ECONNREFUSED errors to help with failover
 

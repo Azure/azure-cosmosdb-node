@@ -24,7 +24,8 @@ SOFTWARE.
 "use strict";
 
 var Base = require("../base")
-    , aggregators = require('./aggregators');
+    , aggregators = require('./aggregators')
+    , HeaderUtils = require("./headerUtils");
 
 var AverageAggregator = aggregators.AverageAggregator
     , CountAggregator = aggregators.CountAggregator
@@ -114,7 +115,7 @@ var TopEndpointComponent = Base.defineClass(
         */
         nextItem: function (callback) {
             if (this.topCount <= 0) {
-                return callback(undefined, undefined, undefined);
+                return callback(undefined, undefined, HeaderUtils.getInitialHeader());
             }
             this.topCount--;
             this.executionContext.nextItem(function (err, item, headers) {
@@ -130,7 +131,7 @@ var TopEndpointComponent = Base.defineClass(
          */
         current: function (callback) {
             if (this.topCount <= 0) {
-                return callback(undefined, undefined);
+                return callback(undefined, undefined, HeaderUtils.getInitialHeader());
             }
             this.executionContext.current(function (err, item, headers) {
                 return callback(err, item, headers);
@@ -187,13 +188,14 @@ var AggregateEndpointComponent = Base.defineClass(
         */
         _getAggregateResult: function (callback) {
             this.toArrayTempResources = [];
+            this.aggregatedHeaders = HeaderUtils.getInitialHeader();
             this.aggregateValues = [];
             this.aggregateValuesIndex = -1;
             var that = this;
 
-            this._getQueryResults(function (err, resources) {
+            this._getQueryResults(function (err, resources, headers) {
                 if (err) {
-                    return callback(err, undefined);
+                    return callback(err, undefined, headers);
                 }
 
                 resources.forEach(function (resource) {
@@ -212,7 +214,7 @@ var AggregateEndpointComponent = Base.defineClass(
                     that.aggregateValues.push(aggregator.getResult());
                 });
 
-                return callback(undefined, that.aggregateValues);
+                return callback(undefined, that.aggregateValues, headers);
             });
         },
 
@@ -223,17 +225,18 @@ var AggregateEndpointComponent = Base.defineClass(
         _getQueryResults: function (callback) {
             var that = this;
 
-            this.executionContext.nextItem(function (err, item) {
+            this.executionContext.nextItem(function (err, item, headers) {
                 if (err) {
-                    return callback(err, undefined);
+                    return callback(err, undefined, headers);
                 }
                 
                 if (item === undefined) {
                     // no more results
-                    return callback(undefined, that.toArrayTempResources);
+                    return callback(undefined, that.toArrayTempResources, that.aggregatedHeaders);
                 }
 
                 that.toArrayTempResources = that.toArrayTempResources.concat(item);
+                HeaderUtils.mergeHeaders(that.aggregatedHeaders, headers);
                 return that._getQueryResults(callback);
             });
 
@@ -247,25 +250,25 @@ var AggregateEndpointComponent = Base.defineClass(
         */
         nextItem: function (callback) {
             var that = this;
-            var _nextItem = function (err, resources) {
+            var _nextItem = function (err, resources, headers) {
                 if (err || that.aggregateValues.length <= 0) {
-                    return callback(undefined, undefined);
+                    return callback(undefined, undefined, headers);
                 }
 
                 var resource = that.aggregateValuesIndex < that.aggregateValues.length
                     ? that.aggregateValues[++that.aggregateValuesIndex]
                     : undefined;
 
-                return callback(undefined, resource);
+                return callback(undefined, resource, headers);
             };
 
             if (that.aggregateValues == undefined) {
-                that._getAggregateResult(function (err, resources) {
-                    return _nextItem(err, resources);
+                that._getAggregateResult(function (err, resources, headers) {
+                    return _nextItem(err, resources, headers);
                 });
             }
             else {
-                return _nextItem(undefined, that.aggregateValues);
+                return _nextItem(undefined, that.aggregateValues, that.aggregatedHeaders);
             }
         },
 
@@ -278,12 +281,12 @@ var AggregateEndpointComponent = Base.defineClass(
         current: function (callback) {
             var that = this;
             if (that.aggregateValues == undefined) {
-                that._getAggregateResult(function (err, resources) {
-                    return callback(undefined, that.aggregateValues[that.aggregateValuesIndex]);
+                that._getAggregateResult(function (err, resources, headers) {
+                    return callback(undefined, that.aggregateValues[that.aggregateValuesIndex], headers);
                 });
             }
             else {
-                return callback(undefined, that.aggregateValues[that.aggregateValuesIndex]);
+                return callback(undefined, that.aggregateValues[that.aggregateValuesIndex], that.aggregatedHeaders);
             }
         },
 

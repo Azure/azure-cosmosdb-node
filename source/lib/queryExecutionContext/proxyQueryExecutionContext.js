@@ -29,6 +29,7 @@ var Base = require("../base")
     , StatusCodes = require("../statusCodes").StatusCodes
     , SubStatusCodes = require("../statusCodes").SubStatusCodes
     , assert = require("assert")
+    , log = require("../log")("query")
 
 //SCRIPT START
 var ProxyQueryExecutionContext = Base.defineClass(
@@ -66,8 +67,10 @@ var ProxyQueryExecutionContext = Base.defineClass(
                         // if that's a partitioned execution info switches the execution context
                         var partitionedExecutionInfo = that._getParitionedExecutionInfo(err);
                         that.queryExecutionContext = that._createPipelinedExecutionContext(partitionedExecutionInfo);
+                        log.info("[nextItem] Received query plan back on response. Creating pipelinedExecutionContext. Query Info: %o", partitionedExecutionInfo);
                         return that.nextItem(callback);
                     } else {
+                        log.error("[nextItem] Error: %o", err);
                         return callback(err, undefined, headers);
                     }
                 } else {

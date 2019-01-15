@@ -202,7 +202,7 @@ describe("NodeJS Cross Partition Tests", function () {
                     'kind': 'Hash'
                 }
             }
-            var collectionOptions = { 'offerThroughput': 10100 }
+            var collectionOptions = { 'offerThroughput': 25100 }
             client.createCollection("dbs/sample 中文 database", collectionDefinition, collectionOptions, function (err, createdCollection) {
                 assert.equal(err, undefined, "error creating collection");
                 collection = createdCollection;
@@ -227,8 +227,9 @@ describe("NodeJS Cross Partition Tests", function () {
             // validate toArray()
             ////////////////////////////////
             options.continuation = undefined;
-            var toArrayVerifier = function (err, results) {
+            var toArrayVerifier = function (err, results, headers) {
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + JSON.stringify(err));
+                assert.notEqual(headers, undefined, "headers must not be undefined");
                 assert.equal(results.length, expectedOrderIds.length, "invalid number of results");
                 assert.equal(queryIterator.hasMoreResults(), false, "hasMoreResults: no more results is left");
                 
@@ -270,13 +271,14 @@ describe("NodeJS Cross Partition Tests", function () {
             // validate nextItem()
             ////////////////////////////////
             var results = [];
-            var nextItemVerifier = function (err, item) {
+            var nextItemVerifier = function (err, item, headers) {
                 
                 ////////////////////////////////
                 // validate current()
                 ////////////////////////////////
-                var currentVerifier = function (err, currentItem) {
+                var currentVerifier = function (err, currentItem, headers) {
                     assert.equal(err, undefined, "unexpected failure in fetching the results: " + err);
+                    assert.notEqual(headers, undefined, "headers must not be undefined");
                     assert.equal(item, currentItem, "current must give the previously item returned by nextItem");
                     
                     if (currentItem === undefined) {
@@ -294,6 +296,7 @@ describe("NodeJS Cross Partition Tests", function () {
                 };
                 
                 assert.equal(err, undefined, "unexpected failure in fetching the results: " + err);
+                assert.notEqual(headers, undefined, "headers must not be undefined");
                 
                 if (item === undefined) {
                     assert(!queryIterator.hasMoreResults(), "hasMoreResults must signal results exhausted");
@@ -461,7 +464,6 @@ describe("NodeJS Cross Partition Tests", function () {
                     // no more results
                     return done();
                 }
-                
                 assert.notEqual(headers[Constants.HttpHeaders.QueryMetrics], null);
                 return queryIterator.executeNext(executeNextCallback);
             };
@@ -501,10 +503,6 @@ describe("NodeJS Cross Partition Tests", function () {
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
             
-            // prepare expected results
-            var getOrderByKey = function (r) {
-                return r['spam'];
-            }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
             
             // validates the results size and order
@@ -516,10 +514,6 @@ describe("NodeJS Cross Partition Tests", function () {
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: -1, populateQueryMetrics: true };
             
-            // prepare expected results
-            var getOrderByKey = function (r) {
-                return r['spam'];
-            }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
             
             // validates the results size and order
@@ -531,10 +525,6 @@ describe("NodeJS Cross Partition Tests", function () {
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
             
-            // prepare expected results
-            var getOrderByKey = function (r) {
-                return r['spam'];
-            }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
             
             // validates the results size and order
@@ -546,10 +536,6 @@ describe("NodeJS Cross Partition Tests", function () {
             var query = 'SELECT * FROM root r';
             var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
             
-            // prepare expected results
-            var getOrderByKey = function (r) {
-                return r['spam'];
-            }
             var expectedOrderedIds = [1, 10, 18, 2, 3, 13, 14, 16, 17, 0, 11, 12, 5, 9, 19, 4, 6, 7, 8, 15];
             
             // validates the results size and order
@@ -559,23 +545,33 @@ describe("NodeJS Cross Partition Tests", function () {
         var requestChargeValidator = function (queryIterator, done) {
             
             var counter = 0;
-            var totalRequestCharge = 0;
+            var totalExecuteNextRequestCharge = 0;
             
             var consumeFunc = function (err, results, headers) {
-                var rc = (headers || {})[Constants.HttpHeaders.RequestCharge];
+                if(err) return done(err);
+                var executeNextRequestCharge = headers[Constants.HttpHeaders.RequestCharge];
                 
                 if (counter == 0) {
-                    assert(rc > 0);
+                    assert(executeNextRequestCharge > 0);
                     counter += 1;
                 }
                 
                 if (results == undefined) {
-                    assert(totalRequestCharge > 0);
-                    return done();
+                    assert(totalExecuteNextRequestCharge > 0);
+                    queryIterator.reset();
+                    queryIterator.toArray(function(err, results, headers) {
+                        if(err) return done(err);
+
+                        var toArrayRequestCharge = headers[Constants.HttpHeaders.RequestCharge];
+                        assert(toArrayRequestCharge > 0, "toArray request charge must be greater than 0");
+                        var percentDifference = Math.abs(toArrayRequestCharge - totalExecuteNextRequestCharge)/totalExecuteNextRequestCharge;
+                        assert(percentDifference <= .01, "difference between toArray request charge and executeNext request charge should be less than 1%");
+                        done();
+                    });
                 }
                 else {
-                    totalRequestCharge += rc;
-                    assert(rc >= 0);
+                    totalExecuteNextRequestCharge += executeNextRequestCharge;
+                    assert(executeNextRequestCharge >= 0);
                     queryIterator.executeNext(consumeFunc);
                 }
             };
@@ -586,18 +582,16 @@ describe("NodeJS Cross Partition Tests", function () {
         it("Validate Parallel Query Request Charge With maxDegreeOfParallelism: 3", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3, populateQueryMetrics: true };
             
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
         });
         
-        
-        
-        it("Validate Parallel Query Request Charge With maxDegreeOfParallelism: 1", function (done) {
+        it("Validate Parallel Query Request Charge With maxDegreeOfParallelism: 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0, populateQueryMetrics: true };
             
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
@@ -606,7 +600,7 @@ describe("NodeJS Cross Partition Tests", function () {
         it("Validate Simple OrderBy Query Request Charge With maxDegreeOfParallelism = 1", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1 };
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 1, populateQueryMetrics: true };
             
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
@@ -615,7 +609,7 @@ describe("NodeJS Cross Partition Tests", function () {
         it("Validate Simple OrderBy Query Request Charge With maxDegreeOfParallelism = 0", function (done) {
             // simple order by query in string format
             var query = 'SELECT * FROM root r order by r.spam';
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0, populateQueryMetrics: true };
             
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
@@ -628,7 +622,7 @@ describe("NodeJS Cross Partition Tests", function () {
             assert(topCount < documentDefinitions.length, "test setup is wrong");
             
             var query = util.format('SELECT top %d * FROM root r', topCount);
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3 };
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 3, populateQueryMetrics: true };
             
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);
@@ -641,7 +635,15 @@ describe("NodeJS Cross Partition Tests", function () {
             assert(topCount < documentDefinitions.length, "test setup is wrong");
             
             var query = util.format('SELECT top %d * FROM root r', topCount);
-            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0 };
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0, populateQueryMetrics: true };
+            
+            var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
+            requestChargeValidator(queryIterator, done);
+        });
+        
+        it("Validate Aggregate Query Request Charge with maxDegreeOfParallelism = 0", function (done) {   
+            var query = 'SELECT VALUE AVG(r.number) FROM root r';
+            var options = { enableCrossPartitionQuery: true, maxItemCount: 2, maxDegreeOfParallelism: 0, populateQueryMetrics: true };
             
             var queryIterator = client.queryDocuments(getCollectionLink(isNameBased, db, collection), query, options);
             requestChargeValidator(queryIterator, done);

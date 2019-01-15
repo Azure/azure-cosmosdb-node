@@ -26,7 +26,8 @@ SOFTWARE.
 var Base = require("../base")
   , QueryMetrics = require("../queryMetrics/queryMetrics.js")
   , ClientSideMetrics = require("../queryMetrics/clientSideMetrics.js")
-  , Constants = require("../constants");
+  , Constants = require("../constants")
+  , HeaderUtils = require('./headerUtils');
 
 //SCRIPT START
 var DefaultQueryExecutionContext = Base.defineClass(
@@ -74,7 +75,7 @@ var DefaultQueryExecutionContext = Base.defineClass(
         current: function(callback) {
             var that = this;
             if (this.currentIndex < this.resources.length) {
-                return callback(undefined, this.resources[this.currentIndex], undefined);
+                return callback(undefined, this.resources[this.currentIndex], HeaderUtils.getInitialHeader());
             }
 
             if (this._canFetchMore()) {
@@ -97,7 +98,7 @@ var DefaultQueryExecutionContext = Base.defineClass(
                 });
             } else {
                 this.state = DefaultQueryExecutionContext.STATES.ended;
-                callback(undefined, undefined, undefined);
+                callback(undefined, undefined, HeaderUtils.getInitialHeader());
             }
         },
 
@@ -119,7 +120,7 @@ var DefaultQueryExecutionContext = Base.defineClass(
          */
         fetchMore: function (callback) {
             if (this.currentPartitionIndex >= this.fetchFunctions.length) {
-                return callback(undefined, undefined, undefined);
+                return callback(undefined, undefined, HeaderUtils.getInitialHeader());
             }
             var that = this;
             // Keep to the original continuation and to restore the value after fetchFunction call
@@ -128,7 +129,7 @@ var DefaultQueryExecutionContext = Base.defineClass(
 
             // Return undefined if there is no more results
             if (this.currentPartitionIndex >= that.fetchFunctions.length) {
-                return callback(undefined, undefined, undefined);
+                return callback(undefined, undefined, HeaderUtils.getInitialHeader());
             }
 
             var fetchFunction = this.fetchFunctions[this.currentPartitionIndex];

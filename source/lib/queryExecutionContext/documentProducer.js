@@ -282,7 +282,7 @@ var DocumentProducer = Base.defineClass(
                 return callback(undefined, undefined, this._getAndResetActiveResponseHeaders());
             }
             
-            // If there are no more bufferd items and there are still items to be fetched then buffer more
+            // If there are no more buffered items and there are still items to be fetched then buffer more
             var that = this;
             this.bufferMore(function (err, items, headers) {
                 if (err) {
