@@ -2212,18 +2212,53 @@ describe("NodeJS CRUD Tests", function () {
         });
     });
     
-    describe.skip("Validate client request timeout", function () {
+    describe("Validate client request timeout", function () {
         it("nativeApi Client Should throw exception", function (done) {
             var connectionPolicy = new DocumentBase.ConnectionPolicy();
             // making timeout 5 ms to make sure it will throw(create database request takes 10ms-15ms to finish on emulator)
-            connectionPolicy.RequestTimeout = 5;
+            connectionPolicy.RequestTimeout = 1;
             var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
             // create database
-            client.createDatabase({ id: "sample database" }, function (err, db) {
+            var count = 0;
+            var PARALLEL_REQUESTS_COUNT = 1;
+            var doneCallback = function (err, db) {
                 assert.equal(err.code, "ECONNRESET", "client should throw exception");
-                done();
-            });
+                assert.equal(err.isTimedout, true, "Error should indicate if timedout occurred");
+                assert.notEqual(err.duration, undefined, "err.duration should not be undefined");
+                assert(err.duration > 0, "err.duration should be positive"); 
+                if(++count >= PARALLEL_REQUESTS_COUNT){
+                    done();
+                }
+            };
+            for(var i = 0; i < PARALLEL_REQUESTS_COUNT; i++) {
+                client.createDatabase({ id: "sample database" }, doneCallback);
+            }
         });
+
+        if(process.env.COSMOS_RUN_CONNECTION_STRESS_TEST) {
+            // This test will fry your DocumentClient. You should usually run it in isolation.
+            it("nativeApi Client Should throw exception from watchdog", function (done) {
+                var connectionPolicy = new DocumentBase.ConnectionPolicy();
+                connectionPolicy.RequestTimeout = 2000;
+                connectionPolicy._requestWatchDogWaitTime = -1999; // Using a negative number to ensure watch dog is called
+                var client = new DocumentDBClient(host, { masterKey: masterKey }, connectionPolicy);
+                // create database
+                var count = 0;
+                var PARALLEL_REQUESTS_COUNT = 10000;
+                var doneCallback = function (err, db) {
+                    assert(err.code === "ECONNRESET" || err.code === 503, "client should throw exception");
+                    assert.equal(err.isTimedout, true, "Error should indicate if timedout occurred");
+                    assert.notEqual(err.duration, undefined, "err.duration should not be undefined");
+                    assert(err.duration > 0, "err.duration should be positive"); 
+                    if(++count >= PARALLEL_REQUESTS_COUNT){
+                        done();
+                    }
+                };
+                for(var i = 0; i < PARALLEL_REQUESTS_COUNT; i++) {
+                    client.createDatabase({ id: "sample database" }, doneCallback);
+                }
+            });
+        }
     });
 
     describe("Validate QueryIterator Functionality For Multiple Partition Collection", function () {

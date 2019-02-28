@@ -190,7 +190,7 @@ var Constants = {
     CurrentVersion: "2017-11-15",
 
     SDKName: "documentdb-nodejs-sdk",
-    SDKVersion: "1.15.1",
+    SDKVersion: "1.15.2",
 
     DefaultPrecisions: {
         DefaultNumberHashPrecision: 3,

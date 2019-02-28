@@ -298,6 +298,14 @@ var AzureDocuments = Base.defineClass(null, null,
                 enumerable: false // this is the default value, so it could be excluded during JSON.stringify
             });
 
+            // Not intended to be modified by users
+            Object.defineProperty(this, "_requestWatchDogWaitTime", {
+                value: 2000,
+                writable: true,
+                configurable: true,
+                enumerable: false // this is the default value, so it could be excluded during JSON.stringify
+            });
+
             this.ConnectionMode = AzureDocuments.ConnectionMode.Gateway;
             this.MediaReadMode = AzureDocuments.MediaReadMode.Buffered;
             this.MediaRequestTimeout = this._defaultMediaRequestTimeout;

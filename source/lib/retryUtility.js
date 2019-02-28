@@ -69,9 +69,12 @@ var RetryUtility = {
     */
     apply: function (body, createRequestObjectFunc, connectionPolicy, requestOptions, endpointDiscoveryRetryPolicy, resourceThrottleRetryPolicy, sessionReadRetryPolicy, defaultRetryPolicy, callback) {
         var that = this;
+        log.info("[%s] [%s] [%s]", requestOptions.method, requestOptions.host, requestOptions.path);
         log.debug("[apply] Request Options: %o", requestOptions);
         var httpsRequest = createRequestObjectFunc(connectionPolicy, requestOptions, function (err, response, headers) {
             if (err) {
+                // Non-success status codes/errors 
+                log.info("Received error: %o", err);
                 var retryPolicy = null;
                 headers = headers || {};
                 // Forbidden errors mean that we might be connecting to the wrong endpoint (failover/etc.), so refresh the endpoints
@@ -93,6 +96,7 @@ var RetryUtility = {
                         log.error("[apply] Cannot retry, %o", err);
                         return callback(err, response, headers);
                     } else {
+                        log.info("Retrying in %d ms", retryPolicy.retryAfterInMilliseconds);
                         setTimeout(function () {
                             if (typeof newUrl !== 'undefined')
                                 requestOptions = that.modifyRequestOptions(requestOptions, newUrl);

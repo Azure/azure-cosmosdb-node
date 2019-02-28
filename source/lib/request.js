@@ -54,17 +54,54 @@ function bodyFromData(data) {
 function parse(urlString) { return url.parse(urlString); }
 
 function createRequestObject(connectionPolicy, requestOptions, callback) {
+    var requestStart = new Date();
+
+    var timeoutCalled = false;
     function onTimeout() {
-        log.error("[onTimeout] Timeout occurred")
+        timeoutCalled = true;
+        var duration = (new Date()) - requestStart;
+        log.error("[onTimeout] Timeout occurred. Aborting request after " + duration + " ms. Agent - freesockets: " + Object.keys(requestOptions.agent.freeSockets).length + ", sockets: " + Object.keys(requestOptions.agent.sockets).length + ", requests: " + Object.keys(requestOptions.agent.requests).length);
         httpsRequest.abort();
     }
 
+    var watchDog = setTimeout(function() {
+        log.error("[watchdog] Watchdog called. Killing request.");
+        onTimeout();
+        const err = new Error("CRITICAL: Request manually aborted past timeout via watchdog. This error is only returned if socket.timeout is not called in time. You likely need to reduce the load on your client or increase the number of available sockets.");
+        err.code = 503;
+        err.isTimedout = true;
+        onComplete(err, undefined, undefined);
+    }, connectionPolicy.RequestTimeout + connectionPolicy._requestWatchDogWaitTime);
+
     var isMedia = (requestOptions.path.indexOf("//media") === 0);
+
+    var isComplete = false;
+    var onComplete = function(err, response, headers) {
+        clearTimeout(watchDog);
+
+        if(err) {
+            err.isTimedout = timeoutCalled;
+            err.duration = (new Date()) - requestStart;
+        }
+
+        if(isComplete) {
+            if(err) {
+                log.error("[onComplete] Received non-sucessful response after completion with error: %o", err);
+            } else {
+                log.warn("[onComplete] Received sucessful respones after completion");
+            }
+            return;
+        }
+
+        isComplete = true;
+        
+        callback(err, response, headers);
+    }
 
     var httpsRequest = https.request(requestOptions, function (response) {
         // In case of media response, return the stream to the user and the user will need to handle reading the stream.
         if (isMedia && connectionPolicy.MediaReadMode === Documents.MediaReadMode.Streamed) {
-            return callback(undefined, response, response.headers);
+            return onComplete(undefined, response, response.headers);
         }
 
         var data = "";
@@ -77,9 +114,10 @@ function createRequestObject(connectionPolicy, requestOptions, callback) {
         response.on("data", function (chunk) {
             data += chunk;
         });
+        
         response.on("end", function () {
             if (response.statusCode >= 400) {
-                return callback(getErrorBody(response, data), undefined, response.headers);
+                return onComplete(getErrorBody(response, data), undefined, response.headers);
             }
 
             var result;
@@ -90,10 +128,10 @@ function createRequestObject(connectionPolicy, requestOptions, callback) {
                     result = data.length > 0 ? JSON.parse(data) : undefined;
                 }
             } catch (exception) {
-                return callback(exception);
+                return onComplete(exception);
             }
 
-            callback(undefined, result, response.headers);
+            onComplete(undefined, result, response.headers);
         });
     });
 
@@ -111,7 +149,7 @@ function createRequestObject(connectionPolicy, requestOptions, callback) {
         });
     });
 
-    httpsRequest.once("error", callback);
+    httpsRequest.once("error", onComplete);
     return httpsRequest;
 }
 

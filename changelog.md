@@ -1,3 +1,11 @@
+## Changes in 1.15.2
+- Adds additional logging and hardening. This includes additional error/warn/info logs which have information about the https.agent state + all errors are now logged
+- Adds a separate watchdog timeout on https requests to handle cases where https.request/socket timeouts themselves get bogged down. This time produces a scary looking error as you'll only see it when running under too much load for a given client/app.
+- Adds `isTimedout` and `duration` to error messages that come from request pipeline. These indicate whether a timeout occurred for the error and what the duration of the request is as measure from the creation of the request callback itself (not based on socket time/etc.)
+
+## Changes in 1.15.1
+- Adds additional logging and hardening
+
 ## Changes in 1.15.0
 - Adds logging support
 - Fixes cross partition aggregate support
