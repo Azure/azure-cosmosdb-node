@@ -11,7 +11,7 @@
     "database",
     "cloud"
   ],
-  "version": "1.15.2",
+  "version": "1.15.3",
   "author": "Microsoft Corporation",
   "main": "./index.js",
   "engine": {

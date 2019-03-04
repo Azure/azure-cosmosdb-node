@@ -1,3 +1,6 @@
+## Changes in 1.15.3
+- Bug with undefined variable during partition key refresh
+
 ## Changes in 1.15.2
 - Adds additional logging and hardening. This includes additional error/warn/info logs which have information about the https.agent state + all errors are now logged
 - Adds a separate watchdog timeout on https requests to handle cases where https.request/socket timeouts themselves get bogged down. This time produces a scary looking error as you'll only see it when running under too much load for a given client/app.

@@ -96,7 +96,7 @@ var ParallelQueryExecutionContextBase = Base.defineClass(
                     log.error("[_onTargetPartitionRanges] Error: %o", err);
                     that.err = err;
                     // release the lock
-                    log.debug("[_onTargetPartitionRanges] semaphore released. Count before release: %d", sem.queue.length);
+                    log.debug("[_onTargetPartitionRanges] semaphore released. Count before release: %d", that.sem.queue.length);
                     that.sem.leave();
                     return;
                 }
