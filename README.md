@@ -1,4 +1,4 @@
-# 🚨🚨🚨 This package has been deprecated. Please upgrade to (https://www.npmjs.com/package/@azure/cosmos) and report any issues in the [Azure js SDK repo](https://github.com/Azure/azure-sdk-for-js). 🚨🚨🚨
+# 🚨🚨🚨 This package has been deprecated. Please upgrade to (https://www.npmjs.com/package/@azure/cosmos) and report any issues in the [Azure JS SDK repo](https://github.com/Azure/azure-sdk-for-js). 🚨🚨🚨
 
 # Microsoft Azure Cosmos DB Node.js SDK v1
 
