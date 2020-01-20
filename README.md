@@ -1,4 +1,6 @@
-# 🚨🚨🚨 This package has been deprecated. Please upgrade to (https://www.npmjs.com/package/@azure/cosmos) and report any issues in the [Azure JS SDK repo](https://github.com/Azure/azure-sdk-for-js). 🚨🚨🚨
+# 🚨Deprecated 🚨
+
+## We recently announced deprecation of JS v1 SDK. Starting September 2020 Microsoft will not provide support for this library. Existing applications using this library will continue to work as-is. We strongly recommend upgrading to [@azure/cosmos](https://www.npmjs.com/package/@azure/cosmos) library. Please file any issues in the Azure SDK for JS repo https://github.com/Azure/azure-sdk-for-js
 
 # Microsoft Azure Cosmos DB Node.js SDK v1
 
